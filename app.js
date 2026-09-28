@@ -1,29 +1,188 @@
-import {createRun,start,room,types,question,answer,proceed,choose,drink,restore} from './engine.js';
-import {questions} from './content.js';
-import {createRenderer} from './renderer.js';
-const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function seed(){return Math.random().toString(36).slice(2,8).toUpperCase();}
-let state;try{state=restore(localStorage.getItem('runespeak-run'));}catch{}state||=createRun(seed());let sound=false,selected=[];
-function save(){try{localStorage.setItem('runespeak-run',JSON.stringify(state));}catch{}}
-function sprite(n){return `<span class="sprite" data-tile="${n}" aria-hidden="true"></span>`;}
-function paintSprites(){document.querySelectorAll('[data-tile]').forEach(el=>{const n=Number(el.dataset.tile);el.style.backgroundPosition=`-${n%12*32}px -${Math.floor(n/12)*32}px`;});}
-function modal(html){$('modal-content').innerHTML=html;$('modal').showModal();paintSprites();}
-function toast(text){$('toast').textContent=text;$('toast').classList.add('visible');setTimeout(()=>$('toast').classList.remove('visible'),2300);}
-function tone(ok){if(!sound)return;try{const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.setValueAtTime(ok?440:180,ac.currentTime);o.frequency.exponentialRampToValueAtTime(ok?660:100,ac.currentTime+.18);g.gain.setValueAtTime(.07,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.35);o.start();o.stop(ac.currentTime+.35);o.onended=()=>ac.close();}catch{}}
-function speak(){if(!('speechSynthesis'in window)){toast('Pronunciation is not supported in this browser.');return;}speechSynthesis.cancel();const q=question(state),u=new SpeechSynthesisUtterance(q.spoken||q.es);u.lang='es-ES';u.rate=.85;speechSynthesis.speak(u);}
-function act(fn){fn();selected=[];save();render();}
-function render(){const rm=room(state),type=types[rm.type],finished=['won','lost'].includes(state.phase);$('health').textContent=`${state.hp} / 100`;$('hearts').textContent='♥'.repeat(Math.ceil(state.hp/20))+'♡'.repeat(5-Math.ceil(state.hp/20));$('health-fill').style.width=state.hp+'%';$('gold').textContent=state.gold;$('streak').innerHTML=`${state.streak} <small>correct</small>`;$('progress').innerHTML=`Room ${state.depth+1} <small>/ 9</small>`;$('potions').textContent=`${state.potions} left · +35 health`;$('potion').disabled=!state.potions||state.hp===100||finished||state.phase==='intro';$('seed-label').textContent=`SEED ${state.seed}`;$('biome').textContent=['THE WHISPERING CRYPT','THE MOSSBOUND HALLS','THE RUNIC DEPTHS'][Math.floor(state.depth/3)];$('room-label').textContent=`ROOM ${String(state.depth+1).padStart(2,'0')}`;$('room-name').textContent=state.phase==='intro'?'The forgotten entrance':type.name;$('encounter-type').textContent=state.phase==='intro'?'YOUR ADVENTURE BEGINS':type.label;$('scene-caption').textContent=state.phase==='doors'?'The runes fade. A new path opens.':type.description;$('challenge-kind').textContent=state.phase==='intro'?'YOUR FIRST EXPEDITION':finished?'EXPEDITION COMPLETE':question(state).category.toUpperCase();$('difficulty').textContent=rm.type==='boss'?`BOSS · ${state.bossStep+1} / 3`:'BEGINNER';
- $('doors').innerHTML=[0,1,2].map(i=>{const next=state.levels[Math.min(8,state.depth+1)][i],t=types[next.type];return `<button class="door" data-door="${i}" ${state.phase!=='doors'?'disabled':''}>${sprite(next.type==='boss'?110:next.type==='treasure'?89:next.type==='shrine'?32:next.type==='trap'?41:45)}<span><strong>${['Left','Middle','Right'][i]} passage</strong><small>${t.label} · ${t.damage} RISK</small></span></button>`;}).join('');$('door-hint').textContent=state.phase==='doors'?'Pick your next encounter':finished?'Adventure complete':'Clear this room to continue';$('door-title').textContent=state.depth===8?'The final chamber.':'Three doors. Your choice.';
- $('map').innerHTML=Array.from({length:9},(_,i)=>`<span class="node ${i===state.depth?'current':''} ${i<state.depth||state.phase==='won'?'done':''}" aria-label="Room ${i+1}${i===state.depth?', current':''}${i<state.depth?', cleared':''}">${i<state.depth||state.phase==='won'?'✓':i===8?'♜':i+1}</span>`).join('');
- const c=$('challenge');if(state.phase==='intro'){c.innerHTML=`<div class="rune-icon">ᚱ</div><h2 id="challenge-heading">Words are your magic.</h2><p class="lead">A forgotten dungeon. A book of spells.<br>And the Spanish words that will get you home.</p><ul class="rules"><li><b>01</b> Cast spells by answering Spanish challenges.</li><li><b>02</b> Choose doors, find treasure, and stay alive.</li><li><b>03</b> Reach room 9 and face the Rune Guardian.</li></ul><button class="primary" id="begin">Enter the dungeon →</button><div class="hint">Beginner friendly · about 5 minutes · no timer</div>`;$('begin').onclick=()=>act(()=>start(state));}
- else if(finished){const won=state.phase==='won';c.innerHTML=`<div class="rune-icon">${won?'✦':'☾'}</div><h2 id="challenge-heading">${won?'You found your way home.':'Even heroes need practice.'}</h2><p class="lead">${won?'The guardian falls silent. Your words have broken the final seal. ¡Muy bien!':'Your adventure ends here, but every word goes with you. Review your journal and try a new path.'}</p><div class="end-stats"><div><strong>${state.correct}/${state.attempts}</strong><span>correct spells</span></div><div><strong>${state.gold}</strong><span>gold found</span></div><div><strong>${state.bestStreak}</strong><span>best streak</span></div></div>${state.feedback?`<div class="feedback bad"><strong>The last rune: ${escape(state.feedback.answer)}</strong><p>${escape(state.feedback.explanation)}</p></div>`:''}<button class="primary" id="again">Start a new adventure →</button><button class="secondary" id="review">Review words from this run</button>`;$('again').onclick=()=>newAdventure();$('review').onclick=showJournal;}
- else if(state.phase==='doors'){c.innerHTML=`<div class="rune-icon">✦</div><h2 id="challenge-heading">Onward, adventurer.</h2><p class="lead">The room is clear. Choose one of the three passages to continue your expedition.</p><ul class="rules"><li><b>◈</b> Treasure: more gold and a bonus potion.</li><li><b>✧</b> Sanctuary: a correct spell restores 25 health.</li><li><b>⚔</b> Battle & traps: a wrong spell costs health.</li></ul><div class="hint">Door risks show health lost for a wrong answer.<br>You can also press 1, 2, or 3 to choose.</div>`;}
- else {const q=question(state);c.innerHTML=`<h2 id="challenge-heading">${rm.type==='boss'?'Break the guardian’s seal.':rm.type==='treasure'?'Unlock the treasure.':rm.type==='shrine'?'Awaken the healing rune.':rm.type==='trap'?'Disarm the ancient rune.':'Cast your next spell.'}</h2><p class="lead">${escape(q.prompt)}</p><div class="prompt-word" ${q.type==='choice'?'lang="es"':''}>${escape(q.es)}${q.type==='choice'?'<button class="listen" id="listen" aria-label="Hear Spanish pronunciation">♪ Hear pronunciation</button>':''}</div><div id="answer-area"></div>`;if($('listen'))$('listen').onclick=speak;if(state.phase==='feedback'){const f=state.feedback;$('answer-area').innerHTML=`<div class="feedback ${f.correct?'':'bad'}" role="status"><strong>${f.correct?'¡Muy bien! Spell successful.':'Not quite. Keep this word.'}</strong><p><b>${escape(f.answer)}</b></p><p>${escape(f.explanation)}</p><span class="reward">${f.correct?`+${f.gain} gold${f.heal?` · +${f.heal} health`:''}${rm.type==='treasure'?' · +1 potion':''}`:`−${f.damage} health · you can still move forward`}</span></div><button class="primary" id="continue">${rm.type==='boss'?(state.bossStep===2?'Leave the dungeon →':'Cast the next spell →'):'Reveal the passages →'}</button>`;$('continue').onclick=()=>act(()=>proceed(state));}else if(q.type==='choice'){$('answer-area').innerHTML=`<div class="answers">${q.options.map((o,i)=>`<button class="answer" data-answer="${i}"><kbd>${i+1}</kbd>${escape(o)}</button>`).join('')}</div><div class="hint">Choose a spell · keys 1–4 also work</div>`;document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>submit(q.options[Number(b.dataset.answer)]));}else renderTokens(q);}
- document.querySelectorAll('[data-door]').forEach(b=>b.onclick=()=>act(()=>choose(state,Number(b.dataset.door))));paintSprites();}
-function renderTokens(q){$('answer-area').innerHTML=`<div class="sentence" lang="es" aria-live="polite">${selected.length?selected.map(i=>escape(q.options[i])).join(' '):'<span class="muted">Your spell goes here…</span>'}</div><div class="tokens">${q.options.map((w,i)=>`<button class="token" data-token="${i}" ${selected.includes(i)?'disabled':''} lang="es">${escape(w)}</button>`).join('')}</div><button class="secondary" id="clear-words">↶ Clear words</button><button class="primary" id="cast" ${selected.length!==q.options.length?'disabled':''}>Cast spell →</button>`;document.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{selected.push(Number(b.dataset.token));renderTokens(q);});$('clear-words').onclick=()=>{selected=[];renderTokens(q);};$('cast').onclick=()=>submit(selected.map(i=>q.options[i]).join(' '));}
-function submit(value){act(()=>answer(state,value));tone(state.feedback?.correct);}
-function showJournal(){const unique=[...new Set(state.journal.map(x=>x.id))];modal(`<div class="eyebrow">YOUR WORD JOURNAL</div><h2>A little wiser, every room.</h2><p>${unique.length?`${state.correct} correct spells from ${state.attempts} challenges. Review your discoveries below.`:'Your discoveries will appear here after your first challenge.'}</p>${unique.map(id=>{const q=questions.find(q=>q.id===id);if(!q)return '';const entries=state.journal.filter(x=>x.id===id);return `<div class="journal-row"><div><b>${escape(q.type==='order'?q.answer:q.es)}</b><p>${escape(q.explanation)}</p></div><span>${entries.at(-1).correct?'✓ Learned':'↶ Practice'}</span></div>`;}).join('')}`);}
-function newAdventure(){modal('<div class="eyebrow">A NEW PATH AWAITS</div><h2>Begin another adventure?</h2><p>This replaces the current run and its word journal. Enter a seed to replay the same dungeon, or leave it blank for a fresh one.</p><label for="seed-input">Dungeon seed (optional)</label><input id="seed-input" maxlength="32" placeholder="e.g. HOLA"><button class="primary" id="confirm-run">Enter a new dungeon →</button>');$('confirm-run').onclick=()=>{state=createRun($('seed-input').value.trim().toUpperCase()||seed());selected=[];save();$('modal').close();render();};}
-$('new-run').onclick=newAdventure;$('journal').onclick=showJournal;$('potion').onclick=()=>{if(drink(state)){save();render();tone(true);toast('+35 health · potion used');}};$('sound').onclick=()=>{sound=!sound;$('sound').setAttribute('aria-pressed',String(sound));$('sound').setAttribute('aria-label',sound?'Disable sound':'Enable sound');toast(sound?'Spell sounds on':'Spell sounds off');};$('help').onclick=()=>modal('<div class="eyebrow">HOW TO PLAY</div><h2>Let your words lead the way.</h2><p>Clear nine rooms by answering a Spanish challenge in each. The final guardian has three challenges. Wrong answers cost health; correct answers earn gold. Reach the end with health remaining to win.</p><ul><li>Click an answer, or press 1–4. For word-order spells, click the words in sequence.</li><li>Read the explanation, then continue. Choose a door with the mouse or 1–3.</li><li>Press H or use Drink potion to recover 35 health.</li><li>Treasure rewards a potion; sanctuaries heal 25 health on a correct answer. A streak of 3+ adds 5 gold per correct spell.</li><li>Progress saves automatically in this browser. No timer, no account.</li></ul><p>Pronunciation uses your browser’s Spanish voice when available. Room layouts, encounters, and challenges vary by dungeon seed.</p>');$('credits').onclick=()=>modal('<div class="eyebrow">BUILT WITH OPEN ART</div><h2>Small pixels. Big adventures.</h2><p>Dungeon tiles, heroes, monsters, and items: <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a>, released under <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener">CC0 1.0</a>. Original license included with the game.</p><p>RuneSpeak code is MIT licensed. Spanish challenges and gameplay were created for this demo. Fonts: DM Sans and Fraunces from Google Fonts (SIL Open Font License); system fonts work offline.</p>');$('close-modal').onclick=()=>$('modal').close();$('modal').onclick=e=>{if(e.target===$('modal')&&e.offsetX<0)$('modal').close();};
-document.addEventListener('keydown',e=>{if($('modal').open||e.ctrlKey||e.metaKey||e.altKey||['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key.toLowerCase()==='h')$('potion').click();const n=Number(e.key)-1;if(n>=0&&n<4){const b=document.querySelector(state.phase==='doors'?`[data-door="${n}"]`:`[data-answer="${n}"]`);b?.click();}if(e.key==='Enter'&&e.target===document.body){$('begin')?.click();$('continue')?.click();}});
-render();createRenderer($('dungeon'),()=>state);
+import { createRun, start, room, types, heroes, items, stats, maxHealth, selectHero, question, answer, proceed, choose, drink, equip, buyPotion, restore, challengeBank } from './engine.js';
+import { createRenderer } from './renderer.js';
+
+const $ = id => document.getElementById(id);
+const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const seed = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+const SAVE_KEY = 'runespeak-v2';
+let state;
+try { state = restore(localStorage.getItem(SAVE_KEY)); } catch {}
+state ||= createRun(seed());
+let busy = false, sound = false, selected = [], toastTimer;
+const renderer = createRenderer($('dungeon'), () => state);
+
+function sprite(n) { return `<span class="sprite" data-tile="${n}" aria-hidden="true"></span>`; }
+function paintSprites() { document.querySelectorAll('[data-tile]').forEach(el => { const n = +el.dataset.tile; el.style.backgroundPosition = `-${n % 12 * 32}px -${Math.floor(n / 12) * 32}px`; }); }
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); $('save-status').textContent = 'Progress saved on this device'; } catch { $('save-status').textContent = 'Storage unavailable · progress will not survive reload'; } }
+function toast(message) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.add('visible'); toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 2200); }
+function modal(html) { $('modal-content').innerHTML = html; if (!$('modal').open) $('modal').showModal(); paintSprites(); }
+function tone(correct) {
+  if (!sound) return;
+  try { const ac = new (window.AudioContext || window.webkitAudioContext)(), osc = ac.createOscillator(), gain = ac.createGain(); osc.connect(gain); gain.connect(ac.destination); osc.type = 'triangle'; osc.frequency.setValueAtTime(correct ? 330 : 150, ac.currentTime); osc.frequency.exponentialRampToValueAtTime(correct ? 660 : 70, ac.currentTime + .22); gain.gain.setValueAtTime(.05, ac.currentTime); gain.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .4); osc.start(); osc.stop(ac.currentTime + .4); osc.onended = () => ac.close(); } catch {}
+}
+function speak() {
+  if (!('speechSynthesis' in window)) return toast('Spanish pronunciation is unavailable in this browser.');
+  const q = question(state); if (!q || q.kind === 'reverse') return;
+  speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(q.kind === 'grammar' ? q.es.replace('___', '…') : q.es);
+  utterance.lang = 'es-ES'; utterance.rate = .85; speechSynthesis.speak(utterance);
+}
+
+function renderHud() {
+  const hero = heroes[state.hero], t = types[room(state).type], bonuses = stats(state);
+  $('hero-portrait').innerHTML = sprite(hero.tile); $('hero-name').textContent = hero.name;
+  $('hero-passive').textContent = `${hero.passive} · ${hero.description}`;
+  $('health').textContent = `${state.hp} / ${maxHealth(state)}`;
+  $('health-fill').style.width = `${state.hp / maxHealth(state) * 100}%`;
+  $('health-bar').setAttribute('aria-valuenow', state.hp); $('health-bar').setAttribute('aria-valuemin', 0); $('health-bar').setAttribute('aria-valuemax', maxHealth(state));
+  $('gold').textContent = `◈ ${state.gold}`; $('streak').textContent = `${state.streak} ×`;
+  $('potions').textContent = `${state.potions} left · +35 HP`;
+  $('potion').disabled = busy || !state.potions || state.hp >= maxHealth(state) || ['select', 'won', 'lost'].includes(state.phase);
+  $('inventory').disabled = busy; $('new-run').disabled = busy;
+  $('biome').textContent = ['I · THE WHISPERING CRYPT', 'II · THE MOSSBOUND HALLS', 'III · THE RUNIC DEPTHS'][Math.floor(state.depth / 3)];
+  $('room-label').textContent = `ROOM ${String(state.depth + 1).padStart(2, '0')} / 09`;
+  $('room-name').textContent = state.phase === 'select' ? 'The adventure awaits' : t.name;
+  $('encounter-type').textContent = state.phase === 'select' ? 'CHOOSE YOUR HERO' : `${t.label} / ${t.mechanic.toUpperCase()}`;
+  const combat = ['battle', 'spell', 'boss'].includes(room(state).type);
+  $('enemy-status').hidden = !combat || ['select', 'doors', 'won'].includes(state.phase) || (state.enemyHp === 0 && !busy);
+  $('enemy-name').textContent = room(state).type === 'boss' ? (state.enemyHp < state.enemyMax / 2 ? 'GUARDIAN · ENRAGED' : 'RUNE GUARDIAN') : room(state).type === 'spell' ? 'RUNE SENTINEL' : ['CRYPT SLIME', 'DUST REAPER', 'STONE BRUTE'][room(state).variant];
+  $('enemy-fill').style.width = `${state.enemyHp / state.enemyMax * 100}%`; $('enemy-health').textContent = `${state.enemyHp} / ${state.enemyMax} HP`;
+  $('enemy-fill').parentElement.classList.toggle('boss', room(state).type === 'boss');
+  $('canvas-hint').textContent = state.phase === 'doors' ? 'THE PASSAGES ARE OPEN · CHOOSE YOUR PATH BELOW' : state.phase === 'won' ? 'THE LAST SEAL IS BROKEN. YOU ARE FREE.' : state.phase === 'lost' ? 'THE CRYPT REMEMBERS YOUR COURAGE.' : t.hint.toUpperCase();
+  $('seed-label').textContent = `SEED ${state.seed}`;
+  $('map').innerHTML = Array.from({ length: 9 }, (_, i) => `<span class="map-node ${i === state.depth ? 'current' : ''} ${i < state.depth || state.phase === 'won' ? 'done' : ''}" aria-label="Room ${i + 1}${i === state.depth ? ', current' : ''}">${i < state.depth || state.phase === 'won' ? '·' : i === 8 ? '♜' : i + 1}</span>`).join('');
+  $('equipment').innerHTML = ['weapon', 'armor', 'charm'].map((slot, i) => {
+    const item = items[state.equipment[slot]];
+    return `<button class="gear-slot ${item ? '' : 'empty'}" data-slot="${slot}" ${busy ? 'disabled' : ''} aria-label="${slot}: ${item ? esc(item.name) + '. ' + esc(item.effect) : 'empty'}. Open backpack"><span class="slot-icon">${sprite(item?.tile ?? [heroes[state.hero].weapon, 101, 56][i])}</span><span><small>${slot.toUpperCase()}</small><strong>${item ? esc(item.name) : 'Empty slot'}</strong><span class="gear-bonus">${item ? esc(item.effect) : 'Find loot in the dungeon'}</span></span></button>`;
+  }).join('');
+  $('combat-stats').innerHTML = `<span>ATK <b>${bonuses.attack}</b></span><span>SPELL <b>+${bonuses.spell}</b></span><span>BLOCK <b>${bonuses.armor}</b></span><span>GOLD <b>+${Math.round(bonuses.gold * 100)}%</b></span>`;
+  $('bag-count').textContent = `${state.inventory.length} / 8`;
+  $('trait-card').innerHTML = `<div class="trait-name">${hero.passive}</div><div class="trait-desc">${hero.description}</div><div class="trait-tag">PASSIVE · ALWAYS ACTIVE</div>`;
+  $('log').innerHTML = state.log.map(line => `<li>${esc(line)}</li>`).join('');
+  document.querySelectorAll('[data-slot]').forEach(button => button.onclick = showInventory);
+}
+
+function render() {
+  renderHud();
+  const q = question(state), t = types[room(state).type];
+  const names = { vocab: '⚔ MELEE / VOCABULARY', grammar: '✦ SPELL / SENTENCE COMPLETION', order: 'ᚱ RUNE / WORD ORDER', reverse: '⌁ DISARM / TRANSLATION' };
+  $('challenge-kind').textContent = state.phase === 'doors' ? '↟ THE WAY FORWARD' : names[q?.kind] || '✦ YOUR ADVENTURE';
+  $('turn-label').textContent = ['won', 'lost'].includes(state.phase) ? 'EXPEDITION COMPLETE' : state.phase === 'doors' ? '1–3 TO CHOOSE' : `TURN ${state.turn + 1} · NO TIMER`;
+  if (busy) { $('challenge').innerHTML = '<div class="busy-indicator" id="challenge-heading">The runes answer…</div>'; paintSprites(); return; }
+  if (state.phase === 'select') {
+    $('challenge').innerHTML = '<h2 id="challenge-heading">A new adventurer approaches.</h2><p>Choose a hero. Learn their strengths. Enter the crypt.</p>';
+  } else if (['won', 'lost'].includes(state.phase)) renderEnding();
+  else if (state.phase === 'doors') renderDoors();
+  else if (state.phase === 'feedback') renderFeedback();
+  else {
+    const spell = q.kind === 'grammar';
+    const instructions = q.kind === 'order' ? q.prompt : q.kind === 'reverse' ? 'Disarm the trap: which Spanish word matches?' : spell ? 'Complete the sentence to cast your spell.' : 'Translate the word to strike your opponent.';
+    $('challenge').innerHTML = `<div class="challenge-layout"><div><h2 id="challenge-heading">${spell ? 'Complete the incantation.' : q.kind === 'order' ? 'Arrange the ancient words.' : q.kind === 'reverse' ? 'Read the warning.' : 'Choose your strike.'}</h2><p class="prompt">${esc(instructions)}</p>${q.kind !== 'order' ? `<div class="rune-text" ${q.kind !== 'reverse' ? 'lang="es"' : ''}>${esc(q.es).replace('___', '<span class="blank">?</span>')}</div>` : ''}${['vocab', 'grammar'].includes(q.kind) ? '<button class="listen-button" id="listen">♪ Hear the inscription</button>' : ''}<div class="challenge-note">${['battle', 'spell', 'boss'].includes(room(state).type) ? `${stats(state).attack + (spell ? stats(state).spell : 0)} damage on a correct answer` : t.action + ' the room'} · ${Math.max(0, t.damage - stats(state).armor)} HP at risk</div></div><div id="answer-area"></div></div>`;
+    if ($('listen')) $('listen').onclick = speak;
+    if (q.type === 'order') renderTokens(q);
+    else {
+      $('answer-area').innerHTML = `<div class="answers ${q.kind}">${q.options.map((option, i) => `<button class="answer" data-answer="${i}"><kbd>${i + 1}</kbd><span ${q.kind !== 'vocab' ? 'lang="es"' : ''}>${esc(option)}</span></button>`).join('')}</div><div class="challenge-note">CHOOSE AN ANSWER · 1–4 OR CLICK</div>`;
+      document.querySelectorAll('[data-answer]').forEach(button => button.onclick = () => submit(q.options[+button.dataset.answer]));
+    }
+  }
+  paintSprites();
+}
+
+function renderTokens(q) {
+  $('answer-area').innerHTML = `<div class="sentence" lang="es" aria-label="Your sentence" aria-live="polite">${selected.map((index, pos) => `<button data-remove="${pos}" aria-label="Remove ${esc(q.options[index])}">${esc(q.options[index])}</button>`).join('')}</div><div class="tokens">${q.options.map((word, i) => `<button class="token" lang="es" data-token="${i}" ${selected.includes(i) ? 'disabled' : ''}>${esc(word)}</button>`).join('')}</div><div class="token-actions"><button class="secondary" id="clear-words">RESET</button><button class="primary" id="cast" ${selected.length !== q.options.length ? 'disabled' : ''}>${types[room(state).type].action.toUpperCase()} →</button></div>`;
+  document.querySelectorAll('[data-token]').forEach(button => button.onclick = () => { selected.push(+button.dataset.token); renderTokens(q); });
+  document.querySelectorAll('[data-remove]').forEach(button => button.onclick = () => { selected.splice(+button.dataset.remove, 1); renderTokens(q); });
+  $('clear-words').onclick = () => { selected = []; renderTokens(q); };
+  $('cast').onclick = () => submit(selected.map(i => q.options[i]).join(' '));
+}
+
+function lootCard() {
+  if (!state.loot) return '';
+  const item = items[state.loot], equipped = state.equipment[item.slot] === state.loot;
+  return `<div class="loot-card">${sprite(item.tile)}<div><span class="rarity">${item.rarity} ${item.slot.toUpperCase()} · FOUND</span><strong>${item.name}</strong><small>${item.effect}</small></div><button id="equip-drop" ${equipped ? 'disabled' : ''}>${equipped ? 'EQUIPPED' : 'EQUIP'}</button></div>`;
+}
+function renderFeedback() {
+  const f = state.feedback;
+  const title = !f.correct ? (f.damage ? 'A mistake. A chance to learn.' : 'The blessing slips away.') : f.cleared ? 'Encounter cleared!' : 'A clean hit. Keep fighting.';
+  const rewards = [f.dealt && ['battle', 'spell', 'boss'].includes(room(state).type) ? `${f.dealt} DAMAGE` : '', f.damage ? `−${f.damage} HP` : '', f.heal ? `+${f.heal} HP` : '', f.gain ? `+${f.gain} GOLD` : '', f.correct && room(state).type === 'treasure' ? '+1 POTION' : ''].filter(Boolean).join(' · ');
+  $('challenge').innerHTML = `<div class="feedback ${f.correct ? '' : 'bad'}"><div><h2 id="challenge-heading" class="feedback-title">${title}</h2><div class="correct-answer">${esc(f.answer)}</div><p>${esc(f.explanation)}</p><div class="reward-line">${rewards}</div></div><div class="feedback-actions">${lootCard()}<button class="primary" id="continue">${state.enemyHp > 0 ? 'NEXT ATTACK →' : state.depth === 8 ? 'LEAVE THE CRYPT →' : 'CHOOSE A PASSAGE →'}</button>${state.loot ? '<span class="challenge-note">Loot is in your backpack. Equip now or later.</span>' : ''}</div></div>`;
+  if ($('equip-drop')) $('equip-drop').onclick = () => equipItem(state.loot);
+  $('continue').onclick = () => { if (busy) return; proceed(state); selected = []; save(); render(); $('scene-banner').textContent = ''; };
+}
+
+function renderDoors() {
+  $('challenge').innerHTML = `<div class="doors-heading"><h2 id="challenge-heading">Choose your next encounter.</h2><p>Door labels reveal the challenge.<br>Risk includes your armor.</p></div><div class="doors">${state.levels[state.depth + 1].map((r, i) => { const t = types[r.type]; return `<button class="door" data-door="${i}">${sprite(t.tile)}<span><strong><kbd>${i + 1}</kbd> ${t.label}</strong><small>${t.mechanic}</small><em>${Math.max(0, t.damage - stats(state).armor)} HP RISK${r.type === 'treasure' ? ' · LOOT' : r.type === 'shrine' ? ' · +30 HP' : ''}</em></span></button>`; }).join('')}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px"><span class="challenge-note">Prepare your gear before moving on.</span><button id="buy-potion" class="secondary" ${state.gold < 40 ? 'disabled' : ''}>BUY POTION · 40 GOLD</button></div>`;
+  document.querySelectorAll('[data-door]').forEach(button => button.onclick = () => moveTo(+button.dataset.door));
+  $('buy-potion').onclick = () => { if (buyPotion(state)) { save(); render(); toast('Potion purchased · −40 gold'); } };
+}
+
+function renderEnding() {
+  const won = state.phase === 'won';
+  $('challenge').innerHTML = `<div class="end-screen"><h2 id="challenge-heading">${won ? 'The crypt has met its match.' : 'Your story is not over.'}</h2><p>${won ? 'The guardian crumbles. Your words have opened the way home. ¡Muy bien!' : 'The dungeon won this round. Your journal keeps the words you discovered.'}</p>${!won && state.feedback ? `<p>Last answer: <b>${esc(state.feedback.answer)}</b> · ${esc(state.feedback.explanation)}</p>` : ''}<div class="end-stats"><div><strong>${state.correct}/${state.attempts}</strong><small>correct answers</small></div><div><strong>${state.gold}</strong><small>gold found</small></div><div><strong>${state.inventory.length}</strong><small>relics found</small></div></div><div class="end-actions"><button id="again" class="primary">CHOOSE A NEW HERO →</button><button id="review" class="secondary">REVIEW YOUR JOURNAL</button></div></div>`;
+  $('again').onclick = resetRun; $('review').onclick = showJournal;
+}
+
+async function submit(value) {
+  if (busy || state.phase !== 'challenge') return;
+  busy = true;
+  const event = answer(state, value); selected = []; save();
+  document.querySelector('.stage').classList.add('resolving'); render();
+  $('scene-banner').className = `scene-banner ${event.correct ? 'positive' : 'negative'}`;
+  $('scene-banner').textContent = event.correct ? (event.kind === 'grammar' ? '¡CONJURO!' : '¡MUY BIEN!') : event.damage ? 'THE DUNGEON STRIKES BACK' : 'THE BLESSING FADES';
+  tone(event.correct); await renderer.play(event);
+  busy = false; document.querySelector('.stage').classList.remove('resolving');
+  $('scene-banner').textContent = event.cleared && event.correct ? (event.loot ? 'VICTORY · LOOT FOUND' : 'ENCOUNTER CLEARED') : '';
+  render();
+  $('continue')?.focus({ preventScroll: true });
+}
+async function moveTo(lane) {
+  if (busy || state.phase !== 'doors') return;
+  busy = true; render(); $('scene-banner').textContent = '';
+  await renderer.play({ type: 'walk', lane });
+  choose(state, lane); selected = []; save(); render();
+  await renderer.play({ type: 'enter' }); busy = false; render();
+}
+async function equipItem(id) {
+  if (busy || !equip(state, id)) return;
+  save(); render(); tone(true);
+  toast(state.equipment[items[id].slot] === id ? `${items[id].name} equipped · ${items[id].effect}` : `${items[id].name} unequipped`);
+  renderer.play({ type: 'equip' });
+}
+function showInventory() {
+  if (busy) return;
+  modal(`<div class="modal-kicker">BACKPACK / ${state.inventory.length} RELICS</div><h2>Your spoils of adventure.</h2><p>Equip one weapon, one armor, and one charm. Swapped items stay in your backpack. Bonuses apply immediately to the next answer.</p>${state.inventory.length ? `<div class="inventory-grid">${state.inventory.map(id => { const item = items[id], active = state.equipment[item.slot] === id; return `<div class="inventory-item ${active ? 'equipped' : ''}">${sprite(item.tile)}<div><div class="modal-kicker">${item.slot.toUpperCase()} · ${item.rarity}</div><strong>${item.name}</strong><p>${item.effect}</p><p>${item.lore}</p><button data-equip="${id}" ${['won', 'lost'].includes(state.phase) ? 'disabled' : ''}>${active ? 'UNEQUIP' : 'EQUIP'}</button></div></div>`; }).join('')}</div>` : '<p>Defeat your first enemy for a guaranteed weapon. Treasure rooms always drop equipment when unlocked.</p>'}`);
+  document.querySelectorAll('[data-equip]').forEach(button => button.onclick = () => { equipItem(button.dataset.equip); showInventory(); });
+}
+function showJournal() {
+  modal(`<div class="modal-kicker">FIELD JOURNAL</div><h2>Knowledge survives the dungeon.</h2><p>${state.correct} correct answers from ${state.attempts} attempts this run.</p>${[...new Set(state.journal.map(entry => entry.id))].map(id => { const q = challengeBank.find(q => q.id === id); if (!q) return ''; const learned = state.journal.filter(entry => entry.id === id).at(-1).correct; return `<div class="journal-row"><div><strong>${esc(q.kind === 'order' ? q.answer : q.es)} → ${esc(q.answer)}</strong><p>${esc(q.explanation)}</p></div><span>${learned ? '✓ LEARNED' : '↶ PRACTICE'}</span></div>`; }).join('') || '<p>Your first discovery is waiting behind the dungeon door.</p>'}`);
+}
+function showSelection() {
+  $('hero-cards').innerHTML = Object.entries(heroes).map(([id, h]) => `<button class="hero-card ${state.hero === id ? 'chosen' : ''}" data-hero="${id}" aria-pressed="${state.hero === id}">${state.hero === id ? '<span class="selected-label">SELECTED</span>' : ''}<div class="hero-art">${sprite(h.tile)}</div><div class="hero-info"><h3>${h.name}</h3><div class="hero-title">${h.title}</div><b>${h.passive}</b><p>${h.description}</p><small>${h.detail}</small></div></button>`).join('');
+  document.querySelectorAll('[data-hero]').forEach(button => button.onclick = () => { selectHero(state, button.dataset.hero); save(); render(); showSelection(); document.querySelector(`[data-hero="${state.hero}"]`).focus(); });
+  if (!$('hero-select').open) $('hero-select').showModal(); paintSprites();
+}
+function resetRun() { $('modal').close(); state = createRun(seed(), state.hero); selected = []; $('seed-input').value = ''; save(); render(); showSelection(); }
+function newRun() { if (busy) return; if (['won', 'lost', 'select'].includes(state.phase)) return resetRun(); modal('<div class="modal-kicker">RETURN TO CAMP</div><h2>Start a new expedition?</h2><p>Your current health, equipment, and journal will be replaced by a fresh run.</p><button class="primary" id="confirm-reset">CHOOSE A NEW HERO →</button>'); $('confirm-reset').onclick = resetRun; }
+
+$('begin').onclick = async () => {
+  if (busy || state.phase !== 'select') return;
+  const customSeed = $('seed-input').value.trim().toUpperCase();
+  if (customSeed) state = createRun(customSeed, state.hero);
+  start(state); save(); $('hero-select').close(); busy = true; render();
+  await renderer.play({ type: 'enter' }); busy = false; render();
+};
+$('hero-select').addEventListener('cancel', event => event.preventDefault());
+$('potion').onclick = async () => { if (busy) return; const heal = drink(state); if (!heal) return; busy = true; save(); render(); await renderer.play({ type: 'heal', heal }); busy = false; render(); toast(`+${heal} health · potion used`); };
+$('inventory').onclick = showInventory; $('journal').onclick = showJournal; $('new-run').onclick = newRun;
+$('sound').onclick = () => { sound = !sound; $('sound').setAttribute('aria-pressed', String(sound)); $('sound').setAttribute('aria-label', sound ? 'Disable sound' : 'Enable sound'); tone(true); toast(sound ? 'Battle sounds on' : 'Battle sounds off'); };
+$('help').onclick = () => modal('<div class="modal-kicker">ADVENTURER’S HANDBOOK</div><h2>Your words have consequences.</h2><p>Defeat enemies by reducing their health to zero. A correct answer attacks; a wrong answer makes the enemy retaliate. There is no timer.</p><ul><li><b>Melee:</b> translate Spanish vocabulary.</li><li><b>Spell duels:</b> fill in a missing word in a Spanish sentence.</li><li><b>Treasure and sanctuaries:</b> arrange Spanish words. Treasure grants equipment and a potion; sanctuaries restore 30 HP.</li><li><b>Traps:</b> translate English into Spanish.</li><li><b>Guardian:</b> cycles vocabulary, sentence completion, and word ordering.</li></ul><p>Equip loot in your backpack (I). Weapons improve attacks, armor reduces damage, and charms add passive bonuses. Gold buys potions between rooms. Press H to heal, J for your journal, and 1–4 for answers. Click sentence words to add or remove them.</p><p>Progress saves in this browser. This local version uses a separate save from the original demo. Sound is optional, and reduced-motion settings shorten animations.</p>');
+$('credits').onclick = () => modal('<div class="modal-kicker">ART & CREDITS</div><h2>Built with open pixel art.</h2><p>Characters, creatures, tiles, and equipment: <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a>, CC0 1.0. Original license is bundled with the game.</p><p>Fonts: VT323, MedievalSharp, and Space Grotesk from Google Fonts (SIL Open Font License). System fonts are used if unavailable. RuneSpeak code is MIT licensed.</p>');
+$('close-modal').onclick = () => $('modal').close();
+document.addEventListener('keydown', event => {
+  if (busy || $('modal').open || $('hero-select').open || event.ctrlKey || event.metaKey || event.altKey || ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
+  const key = event.key.toLowerCase();
+  if (key === 'h') $('potion').click(); if (key === 'i') showInventory(); if (key === 'j') showJournal();
+  const index = Number(key) - 1;
+  if (index >= 0 && index < 4) document.querySelector(state.phase === 'doors' ? `[data-door="${index}"]` : `[data-answer="${index}"]`)?.click();
+});
+render();
+if (state.phase === 'select') showSelection();
