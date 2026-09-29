@@ -54,7 +54,10 @@ Progress and the current run's journal save only in this browser. Starting anoth
 - `content.js`: Spanish vocabulary, grammar, and sentence challenges
 - `renderer.js`: animated Canvas 2D dungeon using a bundled tile atlas
 - `app.js`: accessible HTML controls, feedback, journal, and persistence
-- `tests/engine.test.js`: generation, victory/defeat, rewards, input gating, and save tests
+- `tests/engine.test.js`: generation, victory/defeat, rewards, input gating, and save tests (Node, `npm test`)
+- `tests/suite-play.js`: the real app driven by real clicks and keystrokes in a live iframe — hero selection, answering by click and by keyboard, focus, and the save/reload round trip (browser, see `tests/README.md`)
+
+Dependencies run one way: `content.js` → `engine.js` → `renderer.js` and `app.js` (`app.js` is the only file that imports both `engine.js` and `renderer.js`). `engine.js` has no DOM and no import from `renderer.js` or `app.js`, which is what lets `tests/engine.test.js` test game logic in isolation.
 
 This is a compact demo, not a complete Spanish curriculum. Rooms share a tile-based chamber template with randomized details and encounters; navigation is by door selection, not free movement.
 
