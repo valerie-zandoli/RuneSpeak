@@ -77,12 +77,9 @@ export function createRenderer(canvas, getState) {
     ctx.fillStyle = '#07121499';
     for (const [x, y, width] of [[hx, hy + 45, 33], [ex, ey + 62, rm.type === 'boss' ? 47 : 32]]) { ctx.beginPath(); ctx.ellipse(x, y, width, 10, 0, 0, Math.PI * 2); ctx.fill(); }
 
-    // Hero and equipped items remain visible, including during attack movement.
+    // Equipment lives in the loadout UI; keep the hero silhouette uncluttered.
     const heroAlpha = s.phase === 'lost' ? .45 : e?.type === 'hurt' && p > .38 && p < .75 && Math.floor(p * 35) % 2 ? .35 : 1;
     tile(hero.tile, hx - 36, hy - 24 + bob, 72, heroAlpha);
-    tile(s.equipment.weapon ? items[s.equipment.weapon].tile : hero.weapon, hx + 25, hy - 7 + bob, 40, heroAlpha);
-    if (s.equipment.armor) tile(items[s.equipment.armor].tile, hx - 43, hy + 4 + bob, 28);
-    if (s.equipment.charm) { tile(items[s.equipment.charm].tile, hx - 12, hy - 50 + bob, 21); glow(hx, hy - 35, 40, '#bad79e22'); }
     if (!e || ['enter', 'heal', 'equip'].includes(e.type)) text(hero.name.replace('The ', '').toUpperCase(), hx, hy + 74, hero.color, 17);
 
     const targetTile = rm.type === 'battle' ? [108, 124, 122][rm.variant] : types[rm.type].tile;
