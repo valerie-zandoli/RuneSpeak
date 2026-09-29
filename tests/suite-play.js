@@ -44,7 +44,7 @@ test("answering a challenge correctly by click deals damage and reaches the feed
 
     const before = app.q("#enemy-health").textContent;
     const options = app.qa("[data-answer]").map((b) => b.querySelector("span").textContent);
-    const q = findCurrentQuestion(challengeBank, options);
+    const q = findCurrentQuestion(challengeBank, options, app.q(".rune-text")?.textContent);
     assert(q, "the rendered options match exactly one challengeBank record");
 
     const correctIndex = options.indexOf(q.answer);
@@ -65,7 +65,7 @@ test("the 1-4 shortcut resolves a challenge in one keystroke, and focus lands on
     assert(app.q("[data-answer]"), "a multiple-choice challenge is on screen");
 
     const options = app.qa("[data-answer]").map((b) => b.querySelector("span").textContent);
-    const q = findCurrentQuestion(challengeBank, options);
+    const q = findCurrentQuestion(challengeBank, options, app.q(".rune-text")?.textContent);
     const correctIndex = options.indexOf(q.answer);
     assert(correctIndex >= 0 && correctIndex < 4, "the correct option is reachable by a single 1-4 press");
 
@@ -79,7 +79,7 @@ test("progress survives a reload: gold and health read the same after the real s
   withFreshRun(async (app) => {
     await beginAsHero(app, "warden");
     const options = app.qa("[data-answer]").map((b) => b.querySelector("span").textContent);
-    const q = findCurrentQuestion(challengeBank, options);
+    const q = findCurrentQuestion(challengeBank, options, app.q(".rune-text")?.textContent);
     const correctIndex = options.indexOf(q.answer);
     app.qa("[data-answer]")[correctIndex].click();
     await waitForFeedback(app);
@@ -105,7 +105,7 @@ test("doors are operable by 1-3 as well as click, once a room is cleared", () =>
     for (let i = 0; i < 8 && !app.q("[data-door]"); i++) {
       if (app.q("[data-answer]")) {
         const options = app.qa("[data-answer]").map((b) => b.querySelector("span").textContent);
-        const q = findCurrentQuestion(challengeBank, options);
+        const q = findCurrentQuestion(challengeBank, options, app.q(".rune-text")?.textContent);
         const idx = options.indexOf(q.answer);
         app.qa("[data-answer]")[idx >= 0 ? idx : 0].click();
         await waitForFeedback(app);

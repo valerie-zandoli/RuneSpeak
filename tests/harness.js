@@ -122,10 +122,35 @@ export async function beginAsHero(app, heroId = "warden") {
  * by comparing the *set* of rendered option labels against each record's
  * options — robust to shuffled order, and does not require reading the
  * app's internal state (which app.js keeps module-private).
+ *
+ * Two records can share an identical option set (confirmed: "g6" and
+ * "g10" both offer estoy/está/están/estás). When that happens, pass the
+ * rendered prompt sentence (the .rune-text element's textContent) to
+ * disambiguate by matching it against each candidate's `es` field. If
+ * more than one candidate remains even after that, this throws instead
+ * of silently guessing — a caller that clicks the wrong "correct"
+ * answer because of a guess would be a worse failure than a loud error
+ * here, and a silent wrong guess is exactly how content growing over
+ * time could turn this into a flaky, hard-to-diagnose test failure.
  */
-export function findCurrentQuestion(challengeBank, renderedOptions) {
+export function findCurrentQuestion(challengeBank, renderedOptions, promptText) {
   const set = new Set(renderedOptions);
-  return challengeBank.find((q) => q.options?.length === renderedOptions.length && q.options.every((o) => set.has(o)));
+  let candidates = challengeBank.filter(
+    (q) => q.options?.length === renderedOptions.length && q.options.every((o) => set.has(o))
+  );
+  if (candidates.length > 1 && promptText) {
+    const normalize = (s) => s.replace(/___/g, "?").trim();
+    const byPrompt = candidates.filter((q) => q.es && normalize(q.es) === promptText.trim());
+    if (byPrompt.length === 1) candidates = byPrompt;
+  }
+  if (candidates.length !== 1) {
+    throw new Error(
+      `findCurrentQuestion: expected exactly one match for options ${JSON.stringify(renderedOptions)}` +
+        `${promptText ? ` (prompt: ${JSON.stringify(promptText)})` : ""}, found ${candidates.length}. ` +
+        `Pass the rendered prompt text to disambiguate, or new content has created a fresh ambiguous pair to fix.`
+    );
+  }
+  return candidates[0];
 }
 
 /** Wait until the feedback screen (#continue) is on screen. */
