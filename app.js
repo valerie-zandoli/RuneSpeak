@@ -1,5 +1,6 @@
 import { createRun, start, room, types, heroes, items, stats, maxHealth, selectHero, question, answer, proceed, choose, drink, equip, buyPotion, restore, challengeBank } from './engine.js';
 import { createRenderer } from './renderer.js';
+import { audio } from './audio.js';
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -8,7 +9,7 @@ const SAVE_KEY = 'runespeak-v2';
 let state;
 try { state = restore(localStorage.getItem(SAVE_KEY)); } catch {}
 state ||= createRun(seed());
-let busy = false, sound = false, selected = [], toastTimer;
+let busy = false, selected = [], toastTimer;
 const renderer = createRenderer($('dungeon'), () => state);
 
 function sprite(n) { return `<span class="sprite" data-tile="${n}" aria-hidden="true"></span>`; }
@@ -16,10 +17,6 @@ function paintSprites() { document.querySelectorAll('[data-tile]').forEach(el =>
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); $('save-status').textContent = 'Progress saved on this device'; } catch { $('save-status').textContent = 'Storage unavailable · progress will not survive reload'; } }
 function toast(message) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.add('visible'); toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 2200); }
 function modal(html) { $('modal-content').innerHTML = html; if (!$('modal').open) $('modal').showModal(); paintSprites(); }
-function tone(correct) {
-  if (!sound) return;
-  try { const ac = new (window.AudioContext || window.webkitAudioContext)(), osc = ac.createOscillator(), gain = ac.createGain(); osc.connect(gain); gain.connect(ac.destination); osc.type = 'triangle'; osc.frequency.setValueAtTime(correct ? 330 : 150, ac.currentTime); osc.frequency.exponentialRampToValueAtTime(correct ? 660 : 70, ac.currentTime + .22); gain.gain.setValueAtTime(.05, ac.currentTime); gain.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .4); osc.start(); osc.stop(ac.currentTime + .4); osc.onended = () => ac.close(); } catch {}
-}
 function speak() {
   if (!('speechSynthesis' in window)) return toast('Spanish pronunciation is unavailable in this browser.');
   const q = question(state); if (!q || q.kind === 'reverse') return;
@@ -28,6 +25,7 @@ function speak() {
 }
 
 function renderHud() {
+  audio.scene(Math.floor(state.depth/3),room(state).type==='boss',['won','lost','select'].includes(state.phase));
   const hero = heroes[state.hero], t = types[room(state).type], bonuses = stats(state);
   $('hero-portrait').innerHTML = sprite(hero.tile); $('hero-name').textContent = hero.name;
   $('hero-passive').textContent = `${hero.passive} · ${hero.description}`;
@@ -128,7 +126,7 @@ async function submit(value) {
   document.querySelector('.stage').classList.add('resolving'); render();
   $('scene-banner').className = `scene-banner ${event.correct ? 'positive' : 'negative'}`;
   $('scene-banner').textContent = event.correct ? (event.kind === 'grammar' ? '¡CONJURO!' : '¡MUY BIEN!') : event.damage ? 'THE DUNGEON STRIKES BACK' : 'THE BLESSING FADES';
-  tone(event.correct); await renderer.play(event);
+  await renderer.play(event);
   busy = false; document.querySelector('.stage').classList.remove('resolving');
   $('scene-banner').textContent = event.cleared && event.correct ? (event.loot ? 'VICTORY · LOOT FOUND' : 'ENCOUNTER CLEARED') : '';
   render();
@@ -143,7 +141,7 @@ async function moveTo(lane) {
 }
 async function equipItem(id) {
   if (busy || !equip(state, id)) return;
-  save(); render(); tone(true);
+  save(); render();
   toast(state.equipment[items[id].slot] === id ? `${items[id].name} equipped · ${items[id].effect}` : `${items[id].name} unequipped`);
   renderer.play({ type: 'equip' });
 }
@@ -174,16 +172,26 @@ $('hero-select').addEventListener('cancel', event => event.preventDefault());
 $('potion').onclick = async () => { if (busy) return; const heal = drink(state); if (!heal) return; busy = true; save(); render(); await renderer.play({ type: 'heal', heal }); busy = false; render(); toast(`+${heal} health · potion used`); };
 $('inventory').onclick = showInventory; $('journal').onclick = showJournal; $('new-run').onclick = newRun;
 $('inventory-short').onclick = showInventory;
-$('sound').onclick = () => { sound = !sound; $('sound').setAttribute('aria-pressed', String(sound)); $('sound').setAttribute('aria-label', sound ? 'Disable sound' : 'Enable sound'); tone(true); toast(sound ? 'Battle sounds on' : 'Battle sounds off'); };
+$('sound').textContent='♫ Audio';
+$('sound').setAttribute('aria-label','Music and sound settings');
+$('sound').onclick=()=>{
+  const prefs=audio.settings;
+  modal('<div class="modal-kicker">SET THE MOOD</div><h2>A little dungeon music?</h2><p>Original, gentle adventure music and playful sounds. Your settings stay on this device.</p><div class="audio-settings">'+['music','effects'].map(key=>'<section><label><span>'+ (key==='music'?'Background music':'Game sound effects')+'</span><input type="checkbox" id="audio-'+key+'" '+(prefs[key]?'checked':'')+'></label><label class="audio-volume"><span>Volume</span><input type="range" min="0" max="100" value="'+Math.round(prefs[key+'Volume']*100)+'" id="volume-'+key+'" aria-label="'+key+' volume"><output>'+Math.round(prefs[key+'Volume']*100)+'%</output></label></section>').join('')+'</div><div class="sound-previews" aria-label="Preview action sounds"><button data-preview-sound="attack">⚔ Attack</button><button data-preview-sound="hurt">Hit</button><button data-preview-sound="walk">Door</button><button data-preview-sound="treasure">Treasure</button></div><p id="audio-status" role="status">Music pauses when you leave the dungeon or switch tabs.</p>');
+  document.querySelectorAll('[data-preview-sound]').forEach(b=>b.onclick=async()=>{if(!await audio.unlock())return;audio.set('effects',true);$('audio-effects').checked=true;if(audio.settings.effectsVolume===0){audio.set('effectsVolume',.7);$('volume-effects').value=70;$('volume-effects').nextElementSibling.textContent='70%';}audio.effect({type:b.dataset.previewSound});$('audio-status').textContent=b.textContent+' sound preview · effects enabled';});
+  ['music','effects'].forEach(key=>{
+    $('audio-'+key).onchange=async e=>{const on=e.target.checked;if(on&&!await audio.unlock()){e.target.checked=false;$('audio-status').textContent='Audio is unavailable in this browser.';return;}audio.set(key,on);if(key==='effects'&&on)audio.effect({type:'equip'});};
+    $('volume-'+key).oninput=e=>{audio.set(key+'Volume',+e.target.value/100);e.target.nextElementSibling.textContent=e.target.value+'%';};
+  });
+};
 $('help').onclick = () => modal('<div class="modal-kicker">ADVENTURER’S HANDBOOK</div><h2>Your words have consequences.</h2><p>Defeat enemies by reducing their health to zero. A correct answer attacks; a wrong answer makes the enemy retaliate. There is no timer.</p><ul><li><b>Melee:</b> translate Spanish vocabulary.</li><li><b>Spell duels:</b> fill in a missing word in a Spanish sentence.</li><li><b>Treasure and sanctuaries:</b> arrange Spanish words. Treasure grants equipment and a potion; sanctuaries restore 30 HP.</li><li><b>Traps:</b> translate English into Spanish.</li><li><b>Guardian:</b> cycles vocabulary, sentence completion, and word ordering.</li></ul><p>Equip loot in your backpack (I). Weapons improve attacks, armor reduces damage, and charms add passive bonuses. Gold buys potions between rooms. Press H to heal, J for your journal, and 1–4 for answers. Click sentence words to add or remove them.</p><p>Progress saves in this browser. This local version uses a separate save from the original demo. Sound is optional, and reduced-motion settings shorten animations.</p>');
-$('credits').onclick = () => modal('<div class="modal-kicker">ART & CREDITS</div><h2>Built with open pixel art.</h2><p>Characters, creatures, tiles, and equipment: <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a>, CC0 1.0. Original license is bundled with the game.</p><p>Fonts: VT323, MedievalSharp, and Space Grotesk from Google Fonts (SIL Open Font License). System fonts are used if unavailable. RuneSpeak code is MIT licensed.</p>');
+$('credits').onclick = () => modal('<div class="modal-kicker">ART & CREDITS</div><h2>Original art. Open-source roots.</h2><p>Current heroes, creatures, scenery, and equipment are original RuneSpeak vector artwork. The earlier pixel-art demo used <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a> (CC0 1.0); its original assets and license remain bundled.</p><p>Fonts: Nunito, VT323, MedievalSharp, and Space Grotesk from Google Fonts (SIL Open Font License). System fonts are used if unavailable. RuneSpeak code is MIT licensed.</p>');
 $('close-modal').onclick = () => $('modal').close();
 document.addEventListener('keydown', event => {
-  if (busy || $('modal').open || $('hero-select').open || event.ctrlKey || event.metaKey || event.altKey || ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
+  if (document.body.dataset.view !== 'dungeon' || busy || $('modal').open || $('hero-select').open || event.ctrlKey || event.metaKey || event.altKey || ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
   const key = event.key.toLowerCase();
   if (key === 'h') $('potion').click(); if (key === 'i') showInventory(); if (key === 'j') showJournal();
   const index = Number(key) - 1;
   if (index >= 0 && index < 4) document.querySelector(state.phase === 'doors' ? `[data-door="${index}"]` : `[data-answer="${index}"]`)?.click();
 });
 render();
-if (state.phase === 'select') showSelection();
+document.addEventListener('runespeak:enter', () => { if(audio.settings.music||audio.settings.effects)audio.unlock(); render(); if (state.phase === 'select') showSelection(); });
