@@ -1,0 +1,781 @@
+[
+  {
+    "version": 2,
+    "shopRoutes": 1,
+    "enemyRoster": 4,
+    "seed": "BEFORE-MONSTERS",
+    "hero": "ranger",
+    "levels": [
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "violet"
+        },
+        {
+          "type": "battle",
+          "variant": 0,
+          "enemyId": "goblin-fighter",
+          "palette": "teal"
+        },
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "cyclops-rockthrower",
+          "palette": "moss"
+        }
+      ],
+      [
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "slime",
+          "palette": "violet"
+        },
+        {
+          "type": "treasure",
+          "variant": 0
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "ember"
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 2
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        },
+        {
+          "type": "trap",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "kobold-skirmisher",
+          "palette": "teal"
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "boss",
+          "variant": 1,
+          "enemyId": "cindermaw",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "rimecoil",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "vesperthorn",
+          "palette": "teal"
+        }
+      ]
+    ],
+    "depth": 0,
+    "lane": 1,
+    "hp": 100,
+    "gold": 0,
+    "potions": 2,
+    "streak": 1,
+    "bestStreak": 1,
+    "correct": 1,
+    "attempts": 1,
+    "phase": "challenge",
+    "enemyHp": 22,
+    "enemyMax": 48,
+    "turn": 1,
+    "questionId": "v28",
+    "journal": [
+      {
+        "id": "v12",
+        "correct": true
+      }
+    ],
+    "path": [],
+    "used": [
+      "v12"
+    ],
+    "inventory": [],
+    "equipment": {
+      "weapon": null,
+      "armor": null,
+      "charm": null
+    },
+    "loot": null,
+    "feedback": null,
+    "log": [
+      "A new adventurer arrives at camp.",
+      "The Ranger enters the dungeon.",
+      "Hit for 26."
+    ]
+  },
+  {
+    "version": 2,
+    "shopRoutes": 1,
+    "enemyRoster": 4,
+    "dungeon": "crypt",
+    "runeCharge": false,
+    "echoQuestionId": null,
+    "seed": "BEFORE-MONSTERS",
+    "hero": "ranger",
+    "levels": [
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "violet"
+        },
+        {
+          "type": "battle",
+          "variant": 0,
+          "enemyId": "goblin-fighter",
+          "palette": "teal"
+        },
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "cyclops-rockthrower",
+          "palette": "moss"
+        }
+      ],
+      [
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "slime",
+          "palette": "violet"
+        },
+        {
+          "type": "treasure",
+          "variant": 0
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "trap",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 1
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "ember"
+        },
+        {
+          "type": "trap",
+          "variant": 2
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 2
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        },
+        {
+          "type": "trap",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 1
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "kobold-skirmisher",
+          "palette": "teal"
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "boss",
+          "variant": 1,
+          "enemyId": "cindermaw",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "rimecoil",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "vesperthorn",
+          "palette": "teal"
+        }
+      ]
+    ],
+    "depth": 0,
+    "lane": 1,
+    "hp": 100,
+    "gold": 0,
+    "potions": 2,
+    "streak": 1,
+    "bestStreak": 1,
+    "correct": 1,
+    "attempts": 1,
+    "phase": "challenge",
+    "enemyHp": 22,
+    "enemyMax": 48,
+    "turn": 1,
+    "questionId": "v28",
+    "journal": [
+      {
+        "id": "v12",
+        "correct": true
+      }
+    ],
+    "path": [],
+    "used": [
+      "v12"
+    ],
+    "inventory": [],
+    "equipment": {
+      "weapon": null,
+      "armor": null,
+      "charm": null
+    },
+    "loot": null,
+    "feedback": null,
+    "log": [
+      "A new adventurer arrives at camp.",
+      "The Ranger enters The Whispering Crypt.",
+      "Hit for 26."
+    ]
+  },
+  {
+    "version": 2,
+    "shopRoutes": 1,
+    "enemyRoster": 4,
+    "dungeon": "moss",
+    "runeCharge": false,
+    "echoQuestionId": null,
+    "seed": "BEFORE-MONSTERS",
+    "hero": "ranger",
+    "levels": [
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "violet"
+        },
+        {
+          "type": "battle",
+          "variant": 0,
+          "enemyId": "goblin-fighter",
+          "palette": "teal"
+        },
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "cyclops-rockthrower",
+          "palette": "moss"
+        }
+      ],
+      [
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "slime",
+          "palette": "violet"
+        },
+        {
+          "type": "treasure",
+          "variant": 0
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "ember"
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 2
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        },
+        {
+          "type": "shrine",
+          "variant": 0
+        }
+      ],
+      [
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "kobold-skirmisher",
+          "palette": "teal"
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "boss",
+          "variant": 1,
+          "enemyId": "cindermaw",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "rimecoil",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "vesperthorn",
+          "palette": "teal"
+        }
+      ]
+    ],
+    "depth": 0,
+    "lane": 1,
+    "hp": 100,
+    "gold": 0,
+    "potions": 2,
+    "streak": 1,
+    "bestStreak": 1,
+    "correct": 1,
+    "attempts": 1,
+    "phase": "challenge",
+    "enemyHp": 22,
+    "enemyMax": 48,
+    "turn": 1,
+    "questionId": "v28",
+    "journal": [
+      {
+        "id": "v12",
+        "correct": true
+      }
+    ],
+    "path": [],
+    "used": [
+      "v12"
+    ],
+    "inventory": [],
+    "equipment": {
+      "weapon": null,
+      "armor": null,
+      "charm": null
+    },
+    "loot": null,
+    "feedback": null,
+    "log": [
+      "A new adventurer arrives at camp.",
+      "The Ranger enters The Mossbound Halls.",
+      "Hit for 26."
+    ]
+  },
+  {
+    "version": 2,
+    "shopRoutes": 1,
+    "enemyRoster": 4,
+    "dungeon": "runic",
+    "runeCharge": false,
+    "echoQuestionId": null,
+    "seed": "BEFORE-MONSTERS",
+    "hero": "ranger",
+    "levels": [
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "violet"
+        },
+        {
+          "type": "battle",
+          "variant": 0,
+          "enemyId": "goblin-fighter",
+          "palette": "teal"
+        },
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "cyclops-rockthrower",
+          "palette": "moss"
+        }
+      ],
+      [
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "slime",
+          "palette": "violet"
+        },
+        {
+          "type": "treasure",
+          "variant": 0
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "shrine",
+          "variant": 1
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "goblin-shaman",
+          "palette": "violet"
+        }
+      ],
+      [
+        {
+          "type": "spell",
+          "variant": 1,
+          "enemyId": "fallen-wizard",
+          "palette": "teal"
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        },
+        {
+          "type": "shrine",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "battle",
+          "variant": 1,
+          "enemyId": "goblin-skirmisher",
+          "palette": "ember"
+        },
+        {
+          "type": "spell",
+          "variant": 2,
+          "enemyId": "kobold-shaman",
+          "palette": "teal"
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 2
+        },
+        {
+          "type": "shop",
+          "variant": 0
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "cyclops-ironhide",
+          "palette": "teal"
+        }
+      ],
+      [
+        {
+          "type": "treasure",
+          "variant": 1
+        },
+        {
+          "type": "spell",
+          "variant": 0,
+          "enemyId": "kobold-skirmisher",
+          "palette": "teal"
+        },
+        {
+          "type": "shop",
+          "variant": 2
+        }
+      ],
+      [
+        {
+          "type": "trap",
+          "variant": 2
+        },
+        {
+          "type": "spell",
+          "variant": 1,
+          "enemyId": "slime",
+          "palette": "teal"
+        },
+        {
+          "type": "treasure",
+          "variant": 1
+        }
+      ],
+      [
+        {
+          "type": "boss",
+          "variant": 1,
+          "enemyId": "cindermaw",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "rimecoil",
+          "palette": "moss"
+        },
+        {
+          "type": "boss",
+          "variant": 2,
+          "enemyId": "vesperthorn",
+          "palette": "teal"
+        }
+      ]
+    ],
+    "depth": 0,
+    "lane": 1,
+    "hp": 100,
+    "gold": 0,
+    "potions": 2,
+    "streak": 1,
+    "bestStreak": 1,
+    "correct": 1,
+    "attempts": 1,
+    "phase": "challenge",
+    "enemyHp": 22,
+    "enemyMax": 48,
+    "turn": 1,
+    "questionId": "v28",
+    "journal": [
+      {
+        "id": "v12",
+        "correct": true
+      }
+    ],
+    "path": [],
+    "used": [
+      "v12"
+    ],
+    "inventory": [],
+    "equipment": {
+      "weapon": null,
+      "armor": null,
+      "charm": null
+    },
+    "loot": null,
+    "feedback": null,
+    "log": [
+      "A new adventurer arrives at camp.",
+      "The Ranger enters The Runic Depths.",
+      "Hit for 26."
+    ]
+  }
+]

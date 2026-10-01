@@ -84,3 +84,10 @@
 /* Dragon bosses and final-route portraits. */
 #enemy-status.dragon{top:9%;left:64%;width:27%}.dragon-door-art{display:block;flex:0 0 48px;width:48px;height:48px;background-size:contain;background-position:center;background-repeat:no-repeat}
 @media(max-width:560px){#enemy-status.dragon{top:3%;left:67%;width:31%}.dragon-door-art{flex-basis:34px;width:34px;height:34px}.scene-content:has(#enemy-status.dragon) .scene-heading{left:2%;right:auto;width:61%;transform:none}}
+
+/* Approved monster silhouettes and long variant names need overhead space. */
+#enemy-status.monster{top:17%;left:64%;width:25%}
+@media(max-width:600px){
+  #enemy-status.monster{top:3%;left:67%;width:31%}
+  .scene-content:has(#enemy-status.monster) .scene-heading{left:2%;right:auto;width:61%;transform:none}
+}

@@ -1,3 +1,5 @@
+import { monsterEnemies } from './monster-roster.js';
+
 // Choose models before palettes so recolors do not crowd the original enemies out.
 export const cyclopsPalettes = ['teal', 'moss', 'violet', 'ember'];
 export const slimeModels = ['jelly', 'droplet', 'puddle'];
@@ -16,6 +18,7 @@ export const battleEnemies = [
   { id: 'kobold-skirmisher', name: 'Kobold Skirmisher', kobold: 'skirmisher', tile: 124 },
   { id: 'kobold-scout', name: 'Kobold Scout', kobold: 'scout', tile: 124 },
   { id: 'kobold-shaman', name: 'Kobold Shaman', kobold: 'shaman', tile: 121 },
+  ...monsterEnemies,
 ];
 
 // Preserve legacy seed slots while replacing retired enemies.
@@ -23,10 +26,11 @@ const rosterOneIds = ['slime', 'reaper', 'brute', 'cyclops-clubber', 'cyclops-ro
 const rosterTwoIds = [...rosterOneIds, 'goblin-skirmisher', 'goblin-shaman', 'goblin-fighter'];
 const rosterThreeIds = ['slime', 'cyclops-clubber', 'cyclops-rockthrower', 'cyclops-ironhide',
   'goblin-skirmisher', 'goblin-shaman', 'goblin-fighter', 'fallen-ranger', 'fallen-warrior', 'fallen-wizard'];
-export const latestEnemyRoster = 4;
-export function battleRoster(version = latestEnemyRoster) {
-  const ids = version === 1 ? rosterOneIds : version === 2 ? rosterTwoIds : version === 3 ? rosterThreeIds : null;
-  return ids ? ids.map(id => battleEnemies.find(enemy => enemy.id === ({ reaper: 'goblin-skirmisher', brute: 'cyclops-clubber' }[id] || id))) : battleEnemies;
+const rosterFourIds = [...rosterThreeIds, 'kobold-skirmisher', 'kobold-scout', 'kobold-shaman'];
+export const latestEnemyRoster = 5;
+export function battleRoster(version = latestEnemyRoster, dungeon = null) {
+  const ids = version === 1 ? rosterOneIds : version === 2 ? rosterTwoIds : version === 3 ? rosterThreeIds : version === 4 ? rosterFourIds : null;
+  return ids ? ids.map(id => battleEnemies.find(enemy => enemy.id === ({ reaper: 'goblin-skirmisher', brute: 'cyclops-clubber' }[id] || id))) : battleEnemies.filter(enemy => !dungeon || !enemy.monster || enemy.dungeon === dungeon);
 }
 
 export const dragonBosses = [

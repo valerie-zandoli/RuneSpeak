@@ -49,7 +49,7 @@ export function stats(s) {
 export function createRun(seed, hero = 'wizard', enemyRoster = latestEnemyRoster, dungeon = null, shopRoutes = 1) {
   if (!heroes[hero]) hero = 'wizard';
   if (dungeon !== null && !Object.hasOwn(dungeons, dungeon)) throw new RangeError('Unknown dungeon');
-  const battleEnemies = battleRoster(enemyRoster);
+  const battleEnemies = battleRoster(enemyRoster, dungeon);
   const levels = Array.from({ length: 9 }, (_, depth) => {
     let trio = shuffle(['battle', 'spell', 'treasure', 'trap', 'shrine', ...(shopRoutes ? ['shop'] : [])], rng(`${seed}:routes:${depth}`)).slice(0, 3);
     if (depth === 0) trio = ['battle', 'battle', 'battle'];
@@ -96,7 +96,7 @@ function avoidEnemyRepeats(s) {
     let key = enemyVariantKey(rm);
     if (!key) continue;
     if (key === previous && rm.type !== 'boss') {
-      const candidates = battleRoster(s.enemyRoster ?? 1).filter(enemy => enemy.id !== enemyForRoom(rm).id);
+      const candidates = battleRoster(s.enemyRoster ?? 1, s.dungeon).filter(enemy => enemy.id !== enemyForRoom(rm).id);
       rm.enemyId = candidates[Math.floor(rng(s.seed + ':no-repeat:' + depth + ':' + lane)() * candidates.length)].id;
       key = enemyVariantKey(rm);
     }
@@ -235,7 +235,7 @@ export function restore(raw) {
     if (s.phase !== 'select' && !challengeBank.some(q => q.id === s.questionId)) return null;
     if (['feedback', 'lost'].includes(s.phase) && (!s.feedback || typeof s.feedback.correct !== 'boolean')) return null;
     if (s.loot !== null && !s.inventory.includes(s.loot)) return null;
-    if (s.enemyRoster !== undefined && ![1, 2, 3, 4].includes(s.enemyRoster)) return null;
+    if (s.enemyRoster !== undefined && ![1, 2, 3, 4, 5].includes(s.enemyRoster)) return null;
     if (s.dungeon !== undefined) {
       if (!Object.hasOwn(dungeons, s.dungeon) || typeof s.runeCharge !== 'boolean') return null;
       if (s.runeCharge && s.dungeon !== 'runic') return null;

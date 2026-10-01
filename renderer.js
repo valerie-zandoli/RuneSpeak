@@ -15,6 +15,9 @@ import { goblinSheet, goblinMotion, drawGoblin, goblinProjectile } from './gobli
 import { skeletonSheet, skeletonPose, skeletonMotion, skeletonProjectile, drawSkeleton } from './skeleton-art.js';
 import { koboldSheet, koboldPose, koboldMotion, koboldProjectile, drawKobold } from './kobold-art.js';
 
+import { monsterFrames } from './assets/monsters/frames.js';
+import { monsterPose, monsterMotion, drawMonster } from './monster-art.js';
+
 export function createRenderer(canvas, getState) {
   const ctx = canvas.getContext('2d');
   const atlas = new Image();
@@ -34,6 +37,16 @@ export function createRenderer(canvas, getState) {
   }
   const cyclopsImages = new Map();
   const skeletonImages = new Map();
+  const monsterImages = new Map();
+  function loadMonster(model) {
+    for (const frame of monsterFrames[model].frames) {
+      if (!monsterImages.has(frame.file)) {
+        const image = new Image();
+        image.src = 'assets/monsters/' + frame.file;
+        monsterImages.set(frame.file, image);
+      }
+    }
+  }
   const koboldImages = new Map();
   function koboldImage(model) {
     if (!koboldImages.has(model)) {
@@ -120,6 +133,7 @@ export function createRenderer(canvas, getState) {
     }
     const s = getState(), rm = room(s), hero = heroes[s.hero];
     const enemy = enemyForRoom(rm);
+    if (enemy?.monster) loadMonster(enemy.monster);
     const dragon = enemy?.dragon ? dragonImage(enemy.dragon) : null;
     const skeleton = enemy?.skeleton ? skeletonImage(enemy.skeleton) : null;
     const kobold = enemy?.kobold ? koboldImage(enemy.kobold) : null;
@@ -128,7 +142,8 @@ export function createRenderer(canvas, getState) {
     const slime = enemy?.slimeModel ? slimeImage(enemy.slimeModel) : null;
     const elapsed = effect ? (now - effect.start) / effect.duration : 1;
     const e = effect, p = clamp(elapsed), time = reduced ? 0 : now / 1000;
-    const enemyMotion = enemy?.model ? cyclopsMotion(enemy.model, e, p, time, reduced)
+    const enemyMotion = enemy?.monster ? monsterMotion(enemy.monster, e, p, time, reduced)
+      : enemy?.model ? cyclopsMotion(enemy.model, e, p, time, reduced)
       : enemy?.kobold ? koboldMotion(enemy.kobold, e, p, time, reduced)
       : enemy?.skeleton ? skeletonMotion(enemy.skeleton, e, p, reduced)
       : enemy?.goblin ? goblinMotion(enemy.goblin, e, p, reduced)
@@ -150,7 +165,7 @@ export function createRenderer(canvas, getState) {
     const ranged = s.hero === 'ranger';
     const impact = s.hero === 'knight' && magical ? .57 : .42;
     if (e?.type === 'attack' && !magical && !ranged && !reduced) hx += Math.sin(clamp(p / .75) * Math.PI) * 335;
-    if (e?.type === 'hurt' && combat && !enemy?.model && !enemy?.slimeModel && !enemy?.goblin && !enemy?.skeleton && !enemy?.kobold && !enemy?.dragon && !reduced) ex -= Math.sin(clamp(p / .8) * Math.PI) * 310;
+    if (e?.type === 'hurt' && combat && !enemy?.model && !enemy?.slimeModel && !enemy?.goblin && !enemy?.skeleton && !enemy?.kobold && !enemy?.monster && !enemy?.dragon && !reduced) ex -= Math.sin(clamp(p / .8) * Math.PI) * 310;
     if (e?.type === 'attack' && p > impact && p < .75 && !reduced) ex += Math.sin(p * 95) * 5;
     const bob = Math.round(Math.sin(time * 3) * 2);
     ctx.fillStyle = '#c7b6db88';
@@ -199,6 +214,18 @@ export function createRenderer(canvas, getState) {
           drawDragon(ctx, dragon, { model: enemy.dragon, x: ex, feet: ey + 62,
             pose: dragonPose(e, p, reduced), alpha, time, reduced });
         } else text(dragon.complete ? 'Dragon artwork unavailable' : 'A dragon approaches…', ex, ey + 30, '#7851b0', 13);
+      } else if (enemy?.monster) {
+        const frames = monsterFrames[enemy.monster].frames;
+        let pose = monsterPose(e, p, reduced, impact);
+        let image = monsterImages.get(frames[pose].file);
+        // While another pose loads, keep the approved idle from the same variant.
+        if (!image?.complete || !image.naturalWidth) {
+          pose = 0; image = monsterImages.get(frames[0].file);
+        }
+        if (image?.complete && image.naturalWidth) {
+          drawMonster(ctx, image, { model: enemy.monster, pose, x: ex, feet: ey + 62,
+            bob: enemyMotion.bob, alpha: dying ? 1 - clamp((p - .76) / .14) : 1 });
+        } else text(image?.complete ? 'Monster artwork unavailable' : 'A monster approaches…', ex, ey + 30, '#7851b0', 13);
       } else if (enemy?.kobold) {
         if (kobold.complete && kobold.naturalWidth) {
           drawKobold(ctx, kobold, { model: enemy.kobold, x: ex, feet: ey + 62,
@@ -347,7 +374,7 @@ export function createRenderer(canvas, getState) {
       if(audio.settings.effects || audio.settings.music) {
         await Promise.race([audio.unlock().catch(() => false), new Promise(resolve => setTimeout(resolve, 200))]);
       }
-      audio.effect({ ...event, enemyKobold: enemyForRoom(room(getState()))?.kobold, dragonBreath: enemyForRoom(room(getState()))?.breath, reducedMotion: reduced });
+      audio.effect({ ...event, enemyMonster: enemyForRoom(room(getState()))?.monster, enemyKobold: enemyForRoom(room(getState()))?.kobold, dragonBreath: enemyForRoom(room(getState()))?.breath, reducedMotion: reduced });
       if (effect) { effect.resolve(); effect = null; }
       return new Promise(resolve => {
         effect = { ...event, start: performance.now(), duration: reduced ? 100 : event.type === 'walk' ? 650 : event.type === 'enter' ? 550 : 1050, resolve };
