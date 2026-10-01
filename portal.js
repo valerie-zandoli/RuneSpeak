@@ -112,7 +112,24 @@ function renderQuiz() {
     renderQuiz();
     if(quiz.phase==='answer'){
       const heading=document.querySelector('.quiz-body h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});window.scrollTo(0,0);
-    }else $('quiz-check')?.focus({preventScroll:true});
+    }else{
+      const justChecked=quiz.answers.at(-1);
+      if(justChecked&&!justChecked.correct){
+        // A peer review flagged missing this on the wrong-answer path.
+        // It was already there -- but focus went straight to Continue,
+        // same as a correct answer, so a learner moving quickly could
+        // press Enter again and skip past it without ever registering
+        // it. Put focus on the explanation itself instead, so the next
+        // keystroke has to land there first. Enter still works to
+        // continue either way -- the global keydown handler calls
+        // quiz-check.click() directly, it does not depend on what has
+        // focus -- this only changes where a learner's eye and next
+        // keystroke naturally go.
+        const feedbackHeading=document.querySelector('#quiz-feedback h2');
+        feedbackHeading?.setAttribute('tabindex','-1');
+        feedbackHeading?.focus({preventScroll:true});
+      }else $('quiz-check')?.focus({preventScroll:true});
+    }
   };
 }
 function exitQuiz(){if(quiz.phase==='complete')return go('home');openModal('<h2>Leave this lesson?</h2><p>Your completed quizzes are safe. This unfinished quiz will not earn XP.</p><div class="exit-actions"><button class="p-button" id="keep-learning">KEEP LEARNING</button><button class="p-button outline-blue" id="leave-quiz">LEAVE LESSON</button></div>');$('keep-learning').onclick=()=>$('modal').close();$('leave-quiz').onclick=()=>go('home');}

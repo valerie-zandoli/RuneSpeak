@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser tests</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 24px; }
+    #summary { font: 700 18px/1.4 system-ui, sans-serif; margin: 16px 0; }
+    #results { font: 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+    .pass { color: #247b3e; }
+    .fail { color: #c63820; font-weight: 700; }
+    .todo { color: #7a5c00; }
+    #frames iframe { border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <!--
+    Browser tests: the real app, driven by real clicks and keystrokes in
+    a live iframe. No dependencies: serve the repo (npm run dev), then
+    open http://localhost:4173/tests/ — results appear below and in
+    window.__testResults. Each test runs against a fresh run and restores
+    whatever real save was in this browser before and after, so this is
+    safe to run against a browser with an in-progress dungeon run open
+    elsewhere.
+
+    Complements tests/engine.test.js (Node), which covers game logic in
+    isolation. This suite covers the DOM wiring engine.test.js cannot see:
+    hero selection, answering through the real UI (click and keyboard),
+    focus, and the save/reload round trip.
+  -->
+  <h1>Browser tests</h1>
+  <div id="summary">Running…</div>
+  <pre id="results"></pre>
+
+  <div id="frames"></div>
+
+  <script type="module" src="browser-tests.js"></script>
+</body>
+</html>
