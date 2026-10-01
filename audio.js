@@ -59,7 +59,15 @@ export const audio={
     const t=ctx.currentTime+.015,type=event.type;
     const play=(notes,length=.23)=>notes.forEach((n,i)=>note(n,t+i*.095,length,.18,'sine',effectsBus));
     if(type==='attack'){if(event.kind==='grammar'){play([72,79,84],.32);noise(t+.3,.22,.23,2400);}else{noise(t+.12,.22,.5,1800);note(58,t,.15,.3,'triangle',effectsBus,14);noise(t+.4,.13,.55,450);note(43,t+.4,.22,.4,'triangle',effectsBus,-12);}if(event.cleared)[72,76,79,84].forEach((n,i)=>note(n,t+.62+i*.09,.35,.24,'sine',effectsBus));}
-    else if(type==='hurt'){noise(t+.3,.2,.55,350);note(47,t+.3,.32,.4,'triangle',effectsBus,-9);note(66,t+.35,.19,.12,'sawtooth',effectsBus,-7);}
+    else if(type==='hurt' && event.dragonBreath){
+      const release=event.reducedMotion?0:.315,hit=event.reducedMotion?0:.42;
+      const acid=event.dragonBreath==='acid',blue=event.dragonBreath==='blue-fire';
+      noise(t+release,event.reducedMotion?.08:.4,acid?.32:.42,acid?3200:blue?1800:900);
+      if(acid)[0,.07,.14].forEach(d=>note(68,t+release+d,.1,.12,'sine',effectsBus,-15));
+      else note(blue?43:34,t+release,.34,.18,'triangle',effectsBus,-7);
+      noise(t+hit,.18,.4,acid?1700:400);
+    }
+    else if(type==='hurt'){const hit=event.enemyKobold?(event.reducedMotion?0:.42):.3;if(event.enemyKobold==='shaman'&&!event.reducedMotion)note(79,t+.231,.18,.16,'sine',effectsBus,-12);noise(t+hit,.2,.55,350);note(47,t+hit,.32,.4,'triangle',effectsBus,-9);note(66,t+hit+.05,.19,.12,'sawtooth',effectsBus,-7);}
     else if(type==='treasure'){noise(t,.18,.3,750);[72,79,84,88,91].forEach((n,i)=>{note(n,t+.2+i*.11,.42,.3,'sine',effectsBus);note(n+12,t+.2+i*.11,.12,.08,'triangle',effectsBus);});}
     else if(type==='heal'||type==='shrine')play([67,72,76,79],.5);
     else if(type==='equip')play([76,84],.2);

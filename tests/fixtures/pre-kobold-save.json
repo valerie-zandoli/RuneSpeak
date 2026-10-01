@@ -1,0 +1,195 @@
+{
+  "version": 2,
+  "enemyRoster": 3,
+  "seed": "PRE-KOBOLD",
+  "hero": "ranger",
+  "levels": [
+    [
+      {
+        "type": "battle",
+        "variant": 0,
+        "enemyId": "goblin-shaman",
+        "palette": "ember"
+      },
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "fallen-ranger",
+        "palette": "teal"
+      },
+      {
+        "type": "battle",
+        "variant": 2,
+        "enemyId": "cyclops-rockthrower",
+        "palette": "violet"
+      }
+    ],
+    [
+      {
+        "type": "spell",
+        "variant": 1,
+        "enemyId": "fallen-warrior",
+        "palette": "violet"
+      },
+      {
+        "type": "treasure",
+        "variant": 0
+      },
+      {
+        "type": "shrine",
+        "variant": 2
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 0
+      },
+      {
+        "type": "spell",
+        "variant": 1,
+        "enemyId": "fallen-wizard",
+        "palette": "violet"
+      },
+      {
+        "type": "shrine",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 1
+      },
+      {
+        "type": "shrine",
+        "variant": 0
+      },
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "cyclops-rockthrower",
+        "palette": "teal"
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 1
+      },
+      {
+        "type": "trap",
+        "variant": 0
+      },
+      {
+        "type": "shrine",
+        "variant": 1
+      }
+    ],
+    [
+      {
+        "type": "shrine",
+        "variant": 1
+      },
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "cyclops-ironhide",
+        "palette": "moss"
+      },
+      {
+        "type": "trap",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "fallen-warrior",
+        "palette": "teal"
+      },
+      {
+        "type": "treasure",
+        "variant": 1
+      },
+      {
+        "type": "trap",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "spell",
+        "variant": 0,
+        "enemyId": "fallen-warrior",
+        "palette": "violet"
+      },
+      {
+        "type": "trap",
+        "variant": 2
+      },
+      {
+        "type": "shrine",
+        "variant": 1
+      }
+    ],
+    [
+      {
+        "type": "boss",
+        "variant": 0,
+        "enemyId": "goblin-shaman",
+        "palette": "violet"
+      },
+      {
+        "type": "boss",
+        "variant": 1,
+        "enemyId": "goblin-skirmisher",
+        "palette": "ember"
+      },
+      {
+        "type": "boss",
+        "variant": 1,
+        "enemyId": "goblin-shaman",
+        "palette": "violet"
+      }
+    ]
+  ],
+  "depth": 0,
+  "lane": 1,
+  "hp": 82,
+  "gold": 0,
+  "potions": 2,
+  "streak": 0,
+  "bestStreak": 0,
+  "correct": 0,
+  "attempts": 1,
+  "phase": "challenge",
+  "enemyHp": 48,
+  "enemyMax": 48,
+  "turn": 1,
+  "questionId": "v19",
+  "journal": [
+    {
+      "id": "v17",
+      "correct": false
+    }
+  ],
+  "path": [],
+  "used": [
+    "v17"
+  ],
+  "inventory": [],
+  "equipment": {
+    "weapon": null,
+    "armor": null,
+    "charm": null
+  },
+  "loot": null,
+  "feedback": null,
+  "log": [
+    "A new adventurer arrives at camp.",
+    "The Ranger enters the dungeon.",
+    "Took 18 damage · the window."
+  ]
+}

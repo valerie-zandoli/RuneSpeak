@@ -10,7 +10,7 @@ function resolveRoom(s) {
   }
   assert(count < 30, 'Room should not get stuck');
 }
-function enterType(type, hero = 'arcanist') {
+function enterType(type, hero = 'wizard') {
   const s = start(createRun('TEST', hero));
   resolveRoom(s);
   s.levels[1][0].type = type;
@@ -20,9 +20,9 @@ function enterType(type, hero = 'arcanist') {
 
 test('character selection changes health and locks after entry', () => {
   const s = createRun('HERO');
-  assert(selectHero(s, 'warden')); assert.equal(s.hp, 120);
+  assert(selectHero(s, 'knight')); assert.equal(s.hp, 120);
   assert(!selectHero(s, 'missing')); start(s);
-  assert(!selectHero(s, 'hunter')); assert.equal(s.hero, 'warden');
+  assert(!selectHero(s, 'ranger')); assert.equal(s.hero, 'knight');
 });
 test('seeded routes are reproducible and room two offers loot and spell paths', () => {
   assert.deepEqual(createRun('HOLA'), createRun('HOLA'));
@@ -54,7 +54,7 @@ test('every encounter draws the intended problem type, boss cycles disciplines',
   for (const kind of ['vocab', 'grammar', 'order', 'vocab']) { assert.equal(question(boss).kind, kind); answer(boss, question(boss).answer); proceed(boss); }
 });
 test('combat requires enough successful attacks and wrong answers do not damage enemy', () => {
-  const s = start(createRun('COMBAT', 'hunter'));
+  const s = start(createRun('COMBAT', 'ranger'));
   const first = question(s).id;
   answer(s, 'wrong'); assert.equal(s.enemyHp, 48); assert.equal(s.hp, 82);
   proceed(s); assert.notEqual(question(s).id, first);
@@ -62,11 +62,11 @@ test('combat requires enough successful attacks and wrong answers do not damage 
   proceed(s); answer(s, question(s).answer); assert.equal(s.enemyHp, 0); assert.equal(s.gold, 30);
   assert.equal(s.inventory.length, 1); assert.equal(items[s.loot].slot, 'weapon');
 });
-test('Warden blocks 6 damage and Arcanist adds 12 only to grammar damage', () => {
-  const warden = start(createRun('CLASS', 'warden'));
-  answer(warden, 'wrong'); assert.equal(warden.hp, 108); assert.equal(warden.feedback.damage, 12);
+test('Knight blocks 6 damage and Wizard adds 12 only to grammar damage', () => {
+  const knight = start(createRun('CLASS', 'knight'));
+  answer(knight, 'wrong'); assert.equal(knight.hp, 108); assert.equal(knight.feedback.damage, 12);
   const mage = enterType('spell'); answer(mage, question(mage).answer); assert.equal(mage.enemyHp, 0);
-  const hunter = enterType('spell', 'hunter'); answer(hunter, question(hunter).answer); assert.equal(hunter.enemyHp, 10);
+  const ranger = enterType('spell', 'ranger'); answer(ranger, question(ranger).answer); assert.equal(ranger.enemyHp, 10);
 });
 test('equipment slots replace instead of stacking, preserve inventory, and reject unowned loot', () => {
   const s = start(createRun('GEAR'));
@@ -114,4 +114,19 @@ test('save preserves equipped bonuses, challenge, and progress; rejects corrupt 
 test('all 84 challenge records have unique IDs and valid answer choices', () => {
   assert.equal(challengeBank.length, 84); assert.equal(new Set(challengeBank.map(q => q.id)).size, 84);
   for (const q of challengeBank) { if (q.type === 'choice') { assert(q.options.includes(q.answer)); assert.equal(new Set(q.options).size, 4); } else assert.equal(q.options.join(' '), q.answer); }
+});
+
+test('existing Warden saves become Knight saves without losing progress or protection', () => {
+  const original = start(createRun('OLD-SAVE', 'knight'));
+  answer(original, 'wrong'); proceed(original);
+  original.inventory = ['oakshield']; equip(original, 'oakshield');
+  const legacy = { ...original, hero: 'warden', log: ['The Warden enters the dungeon.'] };
+  const loaded = restore(JSON.stringify(legacy));
+  assert.equal(loaded.hero, 'knight');
+  assert.equal(loaded.hp, original.hp);
+  assert.equal(loaded.questionId, original.questionId);
+  assert.deepEqual(loaded.equipment, original.equipment);
+  assert.equal(stats(loaded).armor, stats(original).armor);
+  assert.equal(loaded.log[0], 'The Knight enters the dungeon.');
+  assert.deepEqual(restore(JSON.stringify(loaded)), loaded);
 });

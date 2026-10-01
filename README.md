@@ -1,20 +1,34 @@
 # RuneSpeak
 
-**Words are your magic.** A playable Spanish-learning dungeon crawler with seeded encounters, pixel art, and bite-sized language challenges.
+**Words are your magic.** A playable Spanish-learning dungeon crawler with seeded encounters, rounded illustrated artwork, and bite-sized language challenges.
 
 ## Play
 
 **[Play RuneSpeak](https://wiltobuild.github.io/RuneSpeak/)**
 
-Choose a route through nine rooms. Translate vocabulary, complete grammar inscriptions, and arrange words into Spanish spells. Correct answers earn gold; wrong answers cost health. Survive the three-spell Rune Guardian to escape.
+Choose a route through nine rooms. Translate vocabulary, complete grammar inscriptions, and arrange words into Spanish spells. Correct answers earn gold; wrong answers cost health. Survive the final champion to escape.
 
 - 52 authored beginner Spanish challenges, with explanations after every answer
 - Seeded branching encounters: monster lairs, treasuries, sanctuaries, and traps
-- Nine-room expeditions with 11 challenges and no repeated questions in a run
+- Nine-room expeditions with multi-turn combat and a final guardian
 - Healing potions, gold, streak bonuses, vocabulary review, and local autosave
 - Optional synthesized spell sounds and browser Spanish pronunciation
 - Mouse, touch, and keyboard controls; responsive layout and reduced-motion support
-- Original CC0 pixel art by Kenney, bundled locally
+- Illustrated heroes, enemies, and themed scenery; original Kenney assets remain bundled
+
+## Choose an expedition
+
+In Adventure, first choose a hero from the large character cards. Choosing a hero replaces that screen with the dungeon picker. Use Change Character to go back, or pick a dungeon and begin the expedition. Every dungeon is available immediately and lasts nine rooms. The selected theme stays for the entire run, including its final guardian.
+
+| Dungeon | Quirk | Route choices |
+| --- | --- | --- |
+| The Whispering Crypt | A missed combat question repeats until answered correctly. Correcting the echo adds 12 attack power. | More traps; echoes do not retry treasure, traps, or shrines. |
+| The Mossbound Halls | Every second consecutive correct answer restores up to 8 health. Mistakes reset the healing streak. | More shrines; thorn traps deal 4 additional damage before armor. |
+| The Runic Depths | Correct grammar stores one charge. The next correct non-grammar combat answer releases it for 18 additional attack power. | More spell rooms; a mistake dispels the charge. Charges persist across rooms and never stack. |
+
+The same seed, hero, and dungeon reproduce the expedition. Dungeon rules and active bonuses appear above the challenge; damage previews and door risks include applicable bonuses and armor. Choose **New run** to change the dungeon after an expedition has begun. Existing saved expeditions without a dungeon choice retain their original routes, enemy roster, rules, and three-region progression.
+
+The approved background concepts are adapted in `themed-dungeon-art.js` as scalable canvas scenery, with opening doors, subtle motion, and static reduced-motion rendering. `dungeons.js` defines the three choices. The original background renderer remains available for older saved expeditions.
 
 ## Run locally
 

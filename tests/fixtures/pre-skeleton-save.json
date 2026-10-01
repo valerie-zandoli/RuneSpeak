@@ -1,0 +1,172 @@
+{
+  "version": 2,
+  "enemyRoster": 2,
+  "seed": "SKELETON-LEGACY",
+  "hero": "ranger",
+  "levels": [
+    [
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "cyclops-ironhide",
+        "palette": "ember"
+      },
+      {
+        "type": "battle",
+        "variant": 0,
+        "enemyId": "goblin-skirmisher",
+        "palette": "ember"
+      },
+      {
+        "type": "battle",
+        "variant": 0,
+        "enemyId": "slime",
+        "palette": "moss"
+      }
+    ],
+    [
+      {
+        "type": "spell",
+        "variant": 1
+      },
+      {
+        "type": "treasure",
+        "variant": 2
+      },
+      {
+        "type": "shrine",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 2
+      },
+      {
+        "type": "trap",
+        "variant": 1
+      },
+      {
+        "type": "shrine",
+        "variant": 2
+      }
+    ],
+    [
+      {
+        "type": "shrine",
+        "variant": 0
+      },
+      {
+        "type": "spell",
+        "variant": 1
+      },
+      {
+        "type": "battle",
+        "variant": 1,
+        "enemyId": "goblin-fighter",
+        "palette": "teal"
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 2
+      },
+      {
+        "type": "shrine",
+        "variant": 0
+      },
+      {
+        "type": "spell",
+        "variant": 2
+      }
+    ],
+    [
+      {
+        "type": "shrine",
+        "variant": 0
+      },
+      {
+        "type": "trap",
+        "variant": 0
+      },
+      {
+        "type": "battle",
+        "variant": 0,
+        "enemyId": "cyclops-clubber",
+        "palette": "moss"
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 0
+      },
+      {
+        "type": "shrine",
+        "variant": 2
+      },
+      {
+        "type": "spell",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "treasure",
+        "variant": 2
+      },
+      {
+        "type": "trap",
+        "variant": 1
+      },
+      {
+        "type": "shrine",
+        "variant": 0
+      }
+    ],
+    [
+      {
+        "type": "boss",
+        "variant": 1
+      },
+      {
+        "type": "boss",
+        "variant": 1
+      },
+      {
+        "type": "boss",
+        "variant": 1
+      }
+    ]
+  ],
+  "depth": 0,
+  "lane": 1,
+  "hp": 100,
+  "gold": 0,
+  "potions": 2,
+  "streak": 0,
+  "bestStreak": 0,
+  "correct": 0,
+  "attempts": 0,
+  "phase": "select",
+  "enemyHp": 48,
+  "enemyMax": 48,
+  "turn": 0,
+  "questionId": null,
+  "journal": [],
+  "path": [],
+  "used": [],
+  "inventory": [],
+  "equipment": {
+    "weapon": null,
+    "armor": null,
+    "charm": null
+  },
+  "loot": null,
+  "feedback": null,
+  "log": [
+    "A new adventurer arrives at camp."
+  ]
+}

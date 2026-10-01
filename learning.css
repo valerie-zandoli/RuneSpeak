@@ -43,3 +43,44 @@
 @keyframes loot-reveal{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:none}}
 .sound-previews{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.sound-previews button{padding:10px 6px;font-size:13px;color:#7851b0;background:#faf7fd}@media(max-width:560px){.sound-previews{grid-template-columns:repeat(2,1fr)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}.celebration{display:none}}
+
+/* Approved Knight artwork, shared with the animated dungeon character. */
+.sprite.knight-sprite{background-image:url('assets/knight-poses.png')!important;background-size:96px 64px;background-position:0 0;background-repeat:no-repeat;image-rendering:auto}
+.sprite.ranger-sprite{background-image:url('assets/ranger-poses.png')!important;background-size:96px 64px;background-position:0 0;background-repeat:no-repeat;image-rendering:auto}
+.sprite.wizard-sprite{background-image:url('assets/wizard-poses.png')!important;background-size:96px 64px;background-position:0 0;background-repeat:no-repeat;image-rendering:auto}
+
+/* One quiet party illustration inside the existing adventure card. */
+.adventure-party{position:relative;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+.adventure-party .portal-art{position:absolute;width:70%;height:100%;left:15%;top:0}
+.adventure-party .adventure-hero{position:absolute;width:42%;height:110px;bottom:3px}
+.adventure-party .party-knight{left:-2%}
+.adventure-party .party-ranger{right:-2%}
+
+/* Keep the taller cyclops silhouettes clear of their health labels. */
+/* Goblin ears and the Shaman crystal need the same overhead clearance. */
+#enemy-status.goblin,#enemy-status.skeleton,#enemy-status.kobold{top:17%;left:64%;width:25%}
+@media(max-width:560px){#enemy-status.goblin,#enemy-status.skeleton,#enemy-status.kobold{top:3%;left:67%;width:31%}
+  .scene-content:has(#enemy-status.kobold) .scene-heading{left:2%;right:auto;width:61%;transform:none}
+}
+/* Let the mobile game column shrink instead of clipping enemies at the right. */
+@media(max-width:560px){
+  .game-shell{grid-template-columns:minmax(0,1fr)}
+  .masthead{flex-wrap:wrap;height:auto;min-height:43px;padding:6px 0}
+  .masthead nav{flex-wrap:wrap}
+}
+#enemy-status.slime{top:27%;left:63%;width:26%}
+@media(max-width:560px){
+  #enemy-status.slime{top:3%;left:65%;width:33%}
+  .scene-content:has(#enemy-status.slime) .scene-heading{left:2%;right:auto;width:61%;transform:none}
+  .play-column,.stage{min-width:0}
+  .stage{grid-template-columns:minmax(0,1fr)}
+  .route-strip>span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:24%}
+  .masthead{height:auto;min-height:43px;flex-wrap:wrap;row-gap:4px;padding:5px 0}
+  .masthead nav{flex-wrap:wrap}
+}
+#enemy-status.cyclops{top:17%;left:64%;width:25%}
+@media(max-width:560px){#enemy-status.cyclops{top:3%;left:67%;width:31%}}
+
+/* Dragon bosses and final-route portraits. */
+#enemy-status.dragon{top:9%;left:64%;width:27%}.dragon-door-art{display:block;flex:0 0 48px;width:48px;height:48px;background-size:contain;background-position:center;background-repeat:no-repeat}
+@media(max-width:560px){#enemy-status.dragon{top:3%;left:67%;width:31%}.dragon-door-art{flex-basis:34px;width:34px;height:34px}.scene-content:has(#enemy-status.dragon) .scene-heading{left:2%;right:auto;width:61%;transform:none}}
