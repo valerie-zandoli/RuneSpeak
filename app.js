@@ -20,7 +20,15 @@ function sprite(n) { return n === 97 ? '<span class="sprite knight-sprite" aria-
 function paintSprites() { document.querySelectorAll('[data-tile]').forEach(el => { const n = +el.dataset.tile; el.style.backgroundPosition = `-${n % 12 * 32}px -${Math.floor(n / 12) * 32}px`; }); }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); $('save-status').textContent = 'Progress saved on this device'; } catch { $('save-status').textContent = 'Storage unavailable · progress will not survive reload'; } }
 function toast(message) { clearTimeout(toastTimer); $('toast').textContent = message; $('toast').classList.add('visible'); toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 2200); }
-function modal(html) { $('modal-content').innerHTML = html; if (!$('modal').open) $('modal').showModal(); paintSprites(); }
+function modal(html) {
+  $('modal-content').innerHTML = html;
+  const dialog = $('modal');
+  if (!dialog.open) {
+    document.querySelector('.game-window').append(dialog);
+    dialog.showModal();
+  }
+  paintSprites();
+}
 function speak() {
   if (!('speechSynthesis' in window)) return toast('Spanish pronunciation is unavailable in this browser.');
   const q = question(state); if (!q || q.kind === 'reverse') return;
@@ -29,6 +37,10 @@ function speak() {
 }
 
 function renderHud() {
+  document.querySelector('.game-window').dataset.phase = state.phase;
+  let learningXp = 0;
+  try { learningXp = JSON.parse(localStorage.getItem('runespeak-learning'))?.xp || 0; } catch {}
+  $('learning-xp').textContent = Number.isFinite(learningXp) ? learningXp : 0;
   audio.scene(dungeonBiome(state),room(state).type==='boss',['won','lost','select'].includes(state.phase));
   const hero = heroes[state.hero], t = types[room(state).type], bonuses = stats(state);
   $('hero-portrait').innerHTML = sprite(hero.tile); $('hero-name').textContent = hero.name;
@@ -46,8 +58,8 @@ function renderHud() {
   $('dungeon-rule').textContent = dungeonStatus(state);
   $('dungeon-rule').title = dungeonFor(state) ? `${dungeonFor(state).description} ${dungeonFor(state).tradeoff}` : dungeonStatus(state);
   $('room-label').textContent = `ROOM ${String(state.depth + 1).padStart(2, '0')} / 09`;
-  $('room-name').textContent = state.phase === 'select' ? 'The adventure awaits' : room(state).type === 'boss' ? enemyLabel(room(state)) : t.name;
-  $('encounter-type').textContent = state.phase === 'select' ? 'CHOOSE YOUR HERO' : `${t.label} / ${(room(state).type === 'boss' ? enemyForRoom(room(state)).breathLabel : t.mechanic).toUpperCase()}`;
+  $('room-name').textContent = state.phase === 'select' ? 'The adventure awaits' : state.phase === 'doors' ? 'Choose your passage' : room(state).type === 'boss' ? enemyLabel(room(state)) : t.name;
+  $('encounter-type').textContent = state.phase === 'select' ? 'CHOOSE YOUR HERO' : state.phase === 'doors' ? 'YOUR NEXT ENCOUNTER' : `${t.label} / ${(room(state).type === 'boss' ? enemyForRoom(room(state)).breathLabel : t.mechanic).toUpperCase()}`;
   const combat = ['battle', 'spell', 'boss'].includes(room(state).type);
   $('enemy-status').hidden = !combat || ['select', 'doors', 'won'].includes(state.phase) || (state.enemyHp === 0 && !busy);
   $('enemy-name').textContent = room(state).type === 'boss' && state.enemyHp < state.enemyMax / 2 ? enemyLabel(room(state)).toUpperCase() + ' · ENRAGED' : enemyLabel(room(state)).toUpperCase();
@@ -59,7 +71,7 @@ function renderHud() {
   $('enemy-status').classList.toggle('kobold', Boolean(enemyForRoom(room(state))?.kobold));
   $('enemy-fill').style.width = `${state.enemyHp / state.enemyMax * 100}%`; $('enemy-health').textContent = `${state.enemyHp} / ${state.enemyMax} HP`;
   $('enemy-fill').parentElement.classList.toggle('boss', room(state).type === 'boss');
-  $('canvas-hint').textContent = state.phase === 'doors' ? 'THE PASSAGES ARE OPEN · CHOOSE YOUR PATH BELOW' : state.phase === 'won' ? 'THE LAST SEAL IS BROKEN. YOU ARE FREE.' : state.phase === 'lost' ? 'THE DUNGEON REMEMBERS YOUR COURAGE.' : t.hint.toUpperCase();
+  $('canvas-hint').textContent = state.phase === 'doors' ? 'THE PASSAGES ARE OPEN · CHOOSE A DOOR' : state.phase === 'won' ? 'THE LAST SEAL IS BROKEN. YOU ARE FREE.' : state.phase === 'lost' ? 'THE DUNGEON REMEMBERS YOUR COURAGE.' : t.hint.toUpperCase();
   $('seed-label').textContent = `SEED ${state.seed}`;
   $('map').innerHTML = Array.from({ length: 9 }, (_, i) => `<span class="map-node ${i === state.depth ? 'current' : ''} ${i < state.depth || state.phase === 'won' ? 'done' : ''}" aria-label="Room ${i + 1}${i === state.depth ? ', current' : ''}">${i < state.depth || state.phase === 'won' ? '·' : i === 8 ? '♜' : i + 1}</span>`).join('');
   $('equipment').innerHTML = ['weapon', 'armor', 'charm'].map((slot, i) => {
@@ -74,6 +86,7 @@ function renderHud() {
 }
 
 function render() {
+  $('scene-doors').replaceChildren();
   renderHud();
   const q = question(state), t = types[room(state).type];
   const names = { vocab: '⚔ MELEE / VOCABULARY', grammar: '✦ SPELL / SENTENCE COMPLETION', order: 'ᚱ RUNE / WORD ORDER', reverse: '⌁ DISARM / TRANSLATION' };
@@ -149,7 +162,17 @@ function renderFeedback() {
 }
 
 function renderDoors() {
-  $('challenge').innerHTML = `<div class="doors-heading"><h2 id="challenge-heading">Choose your next encounter.</h2><p>Door labels reveal the challenge.<br>Risk includes your armor.</p></div><div class="doors">${state.levels[state.depth + 1].map((r, i) => { const t = types[r.type]; return `<button class="door" data-door="${i}">${r.type === 'boss' ? `<span class="dragon-door-art" style="background-image:url('assets/dragons/${enemyForRoom(r).dragon}-approved.png')" aria-hidden="true"></span>` : sprite(t.tile)}<span><strong><kbd>${i + 1}</kbd> ${r.type === 'boss' ? enemyLabel(r) : t.label}</strong><small>${r.type === 'boss' ? enemyForRoom(r).breathLabel : t.mechanic}</small><em>${incomingDamage(state, r.type)} HP RISK${r.type === 'treasure' ? ' · LOOT' : r.type === 'shrine' ? ' · +30 HP' : r.type === 'shop' ? ' · RELICS FOR GOLD' : ''}</em></span></button>`; }).join('')}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px"><span class="challenge-note">Prepare your gear before moving on.</span><button id="buy-potion" class="secondary" ${state.gold < 40 ? 'disabled' : ''}>BUY POTION · 40 GOLD</button></div>`;
+  // Match the outer roundRect in each canvas renderer, in its 960 x 480 space.
+  const arch = state.dungeon
+    ? { width:124, height:158, top:111, radius:62, foot:5 }
+    : { width:106, height:159, top:95, radius:53, foot:6 };
+  const {width:w, height:h, radius:r, foot:f} = arch;
+  const outline = `M0 ${r} A${r} ${r} 0 0 1 ${w} ${r} V${h-f} Q${w} ${h} ${w-f} ${h} H${f} Q0 ${h} 0 ${h-f} Z`;
+  $('scene-doors').style.setProperty('--arch-top', (arch.top / 480 * 100) + '%');
+  $('scene-doors').style.setProperty('--arch-height', (h / 480 * 100) + '%');
+  $('scene-doors').style.setProperty('--arch-width', (w / 960 * 100) + '%');
+  $('challenge').innerHTML = `<div class="doors-heading"><h2 id="challenge-heading">Choose your next encounter.</h2><p>Choose a doorway in the room. Risk includes your armor.</p></div><div class="doors">${state.levels[state.depth + 1].map((r, i) => { const t = types[r.type]; return `<button class="door" data-door="${i}"><svg class="door-outline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${outline}"/></svg><span class="door-option">${r.type === 'boss' ? `<span class="dragon-door-art" style="background-image:url('assets/dragons/${enemyForRoom(r).dragon}-approved.png')" aria-hidden="true"></span>` : sprite(t.tile)}<span class="door-copy"><strong><kbd>${i + 1}</kbd> ${r.type === 'boss' ? enemyLabel(r) : t.label}</strong><small>${r.type === 'boss' ? enemyForRoom(r).breathLabel : t.mechanic}</small><em>${incomingDamage(state, r.type)} HP RISK${r.type === 'treasure' ? ' · LOOT' : r.type === 'shrine' ? ' · +30 HP' : r.type === 'shop' ? ' · RELICS FOR GOLD' : ''}</em></span></span></button>`; }).join('')}</div><div class="passage-actions"><span class="challenge-note">Prepare your gear before moving on.</span><button id="buy-potion" class="secondary" ${state.gold < 40 ? 'disabled' : ''}>BUY POTION · 40 GOLD</button></div>`;
+  $('scene-doors').appendChild($('challenge').querySelector('.doors'));
   document.querySelectorAll('[data-door]').forEach(button => button.onclick = () => moveTo(+button.dataset.door));
   $('buy-potion').onclick = () => { if (buyPotion(state)) { save(); render(); toast('Potion purchased · −40 gold'); } };
 }
@@ -234,6 +257,19 @@ $('begin').onclick = async () => {
 };
 $('hero-select').addEventListener('cancel', event => event.preventDefault());
 $('potion').onclick = async () => { if (busy) return; const heal = drink(state); if (!heal) return; busy = true; save(); render(); await renderer.play({ type: 'heal', heal }); busy = false; render(); toast(`+${heal} health · potion used`); };
+function toggleLoadout(open) {
+  $('loadout-panel').hidden = !open;
+  $('loadout-toggle').setAttribute('aria-expanded', String(open));
+  if (open) $('loadout-close').focus({ preventScroll: true });
+  else $('loadout-toggle').focus({ preventScroll: true });
+}
+$('loadout-toggle').onclick = () => toggleLoadout($('loadout-panel').hidden);
+$('loadout-close').onclick = () => toggleLoadout(false);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !$('loadout-panel').hidden && !$('modal').open) {
+    toggleLoadout(false); event.preventDefault();
+  }
+});
 $('inventory').onclick = showInventory; $('journal').onclick = showJournal; $('new-run').onclick = newRun;
 $('inventory-short').onclick = showInventory;
 $('sound').textContent='♫ Audio';

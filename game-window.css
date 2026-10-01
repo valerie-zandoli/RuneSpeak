@@ -1,0 +1,209 @@
+/* A single adventure surface; navigation above it retains its existing layout. */
+.game-shell { grid-template-rows:auto minmax(0,1fr); padding-bottom:12px; }
+.game-window { --room-tint:#f1eafa; --room-ink:#7851b0; position:relative; isolation:isolate; min-height:0; display:grid; grid-template-rows:auto minmax(160px,1fr) auto auto; overflow:hidden; border:2px solid #d8c9e9; border-radius:22px; background:var(--room-tint); box-shadow:0 5px 0 #ddd4e8; }
+[data-region="moss"] .game-window { --room-tint:#edf6e8; --room-ink:#426f3c; border-color:#bdcfae; }
+[data-region="runic"] .game-window { --room-tint:#edf6ff; --room-ink:#36638f; border-color:#bbd2e8; }
+.game-window .game-layout,.game-window .play-column { display:contents; }
+.game-window .hero-hud { display:flex; gap:16px; margin:0; padding:12px 18px; min-height:76px; border:0; border-radius:0; box-shadow:none; background:#ffffffbd; border-bottom:1px solid #ffffff; z-index:3; }
+.game-window .vitals { flex:1; min-width:120px; max-width:340px; width:auto; }
+.game-window .hud-stat { min-width:64px; margin:0; padding:0 12px; }
+.game-window .hud-stat>span { font-size:10px; display:block; white-space:nowrap; }
+.game-window .hud-stat strong { font-size:21px; }
+.game-window .xp-stat strong { color:#1b92c5; }
+.game-window .loadout-toggle { margin-left:auto; min-height:44px; display:flex; align-items:center; gap:7px; padding:8px 14px; color:var(--room-ink); background:#fff; border:2px solid #ded3ea; border-bottom-width:4px; border-radius:13px; font:900 13px Nunito,sans-serif; }
+.game-window .loadout-toggle[aria-expanded="true"] { background:#eaddfa; border-color:#b18bd7; }
+.game-window .potion-button { margin:0; min-height:44px; }
+.game-window .stage { position:relative; display:grid; grid-template-rows:28px minmax(0,1fr) 28px; border:0; border-radius:0; box-shadow:none; background:var(--room-tint); overflow:hidden; }
+.game-window .stage-heading { background:transparent; color:var(--room-ink); padding:0 18px; font-size:10px; }
+.game-window .canvas-wrap { background:var(--room-tint); }
+.game-window .route-strip { background:transparent; border:0; color:var(--room-ink); padding:0 18px; }
+.game-window .scene-heading { pointer-events:none; }
+.game-window .canvas-hint { display:none; }
+.game-window .command-panel { border:0; border-radius:18px; margin:0 12px 8px; box-shadow:0 2px 0 #00000009; background:#ffffffeb; max-height:40dvh; overflow:auto; }
+.game-window .command-heading { background:transparent; color:var(--room-ink); }
+.game-window .dungeon-rule { background:transparent; color:var(--room-ink); border:0; padding:2px 16px 6px; font-size:11px; }
+.game-window #challenge { padding:10px 16px 14px; }
+.game-window .challenge-layout,.game-window .feedback { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
+.game-window .answers { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.game-window #challenge-heading { font-size:20px; }
+.game-window .prompt { font-size:13px; }
+.game-window .answer { min-height:44px; }
+.game-window footer { padding:0 18px 7px; font-size:9px; color:var(--room-ink); }
+.game-window .local-badge { display:none; }
+/* Passage hit areas follow the three doors in the 960 x 480 illustration. */
+#scene-doors { position:absolute; inset:0; z-index:4; pointer-events:none; }
+#scene-doors .doors { display:block; position:absolute; inset:0; }
+#scene-doors .door { position:absolute; top:var(--arch-top); height:var(--arch-height); width:var(--arch-width); min-height:0; display:block; padding:0; background:transparent; border:0; box-shadow:none; border-radius:50% 50% 4px 4px; pointer-events:auto; text-align:center; transform:translateX(-50%); }
+#scene-doors .door:nth-child(1) { left:27.5%; }
+#scene-doors .door:nth-child(2) { left:50%; }
+#scene-doors .door:nth-child(3) { left:72.5%; }
+#scene-doors .door-outline { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+#scene-doors .door-outline path { fill:#ffffff0a; stroke:#ffffff70; stroke-width:2; vector-effect:non-scaling-stroke; }
+#scene-doors .door:hover,#scene-doors .door:focus-visible { background:transparent; outline:0; }
+#scene-doors .door:hover .door-outline path,#scene-doors .door:focus-visible .door-outline path { fill:#ffffff24; stroke:#fff; stroke-width:4; }
+#scene-doors .door-option { position:absolute; left:50%; top:23%; transform:translateX(-50%); display:flex; align-items:center; gap:8px; width:clamp(100px,20cqw,228px); padding:10px 8px; background:#fff9eff2; border:2px solid #d7c5a8; border-bottom-width:4px; border-radius:12px; color:#5a456c; box-shadow:0 3px 12px #44275e13; }
+#scene-doors .door-option>.sprite { display:block; width:32px; height:32px; margin:0; transform:none; }
+#scene-doors .dragon-door-art { display:block; flex:0 0 36px; width:36px; height:36px; }
+#scene-doors .door-copy { display:block; flex:1; min-width:0; }
+#scene-doors .door:hover .door-option,#scene-doors .door:focus-visible .door-option { border-color:#9571bd; background:#fff; }
+#scene-doors .door strong { font-size:16px; line-height:1.25; }
+#scene-doors .door small { font-size:13px; line-height:1.4; }
+#scene-doors .door em { display:block; font-size:12px; line-height:1.4; }
+.game-window[data-phase="doors"] .doors-heading { display:flex; gap:12px; }
+.game-window[data-phase="doors"] .doors-heading p { margin:0; font-size:11px; }
+.game-window[data-phase="doors"] #challenge { padding-top:3px; }
+.game-window[data-phase="doors"] .scene-heading h1 { font-size:20px; }
+/* Loadout is a dismissible in-game drawer, not a separate column. */
+.game-window #loadout-panel { display:block; position:absolute; z-index:10; right:12px; top:88px; bottom:38px; width:min(300px,calc(100% - 24px)); padding:18px; background:#fffffff5; backdrop-filter:blur(12px); border:2px solid #d8c9e9; border-radius:18px; box-shadow:0 12px 40px #35204426; overflow:auto; }
+.game-window #loadout-panel[hidden] { display:none; }
+.game-window #loadout-panel #equipment { display:block; }
+.game-window #loadout-panel .gear-slot { display:flex; flex-direction:row; width:100%; min-height:60px; margin-bottom:8px; padding:8px; }
+.game-window #loadout-panel .combat-stats { display:grid; grid-template-columns:1fr 1fr; }
+.game-window #loadout-panel .divider,.game-window #loadout-panel .panel-label,.game-window #loadout-panel #trait-card,.game-window #loadout-panel .sidebar-bottom { display:block; }
+.game-window #loadout-panel #log li { display:block; }
+.game-window #loadout-close { margin:-8px -5px 0 8px; }
+@media(max-width:700px) {
+ .game-window { border-radius:16px; grid-template-rows:auto minmax(160px,1fr) auto auto; }
+ .game-window .hero-hud { flex-wrap:wrap; gap:8px; padding:8px 10px; }
+ .game-window .vitals { max-width:none; flex:1; min-width:180px; }
+ .game-window .portrait { width:34px; height:34px; }
+ .game-window .passive { display:none; }
+ .game-window .hud-stat { padding:0 5px; min-width:42px; }
+ .game-window .hud-stat strong { font-size:16px; }
+ .game-window .hud-stat>span { font-size:8px; }
+ .game-window .streak-stat { display:block; }
+ .game-window .loadout-toggle { padding:5px 9px; font-size:11px; }
+ .game-window .potion-button { padding:3px 7px; }
+ .game-window .potion-button .sprite { display:none; }
+ .game-window .stage { grid-template-rows:25px minmax(0,1fr) 24px; }
+ .game-window .stage-heading,.game-window .route-strip { padding:0 10px; }
+ .game-window .command-panel { margin:0 5px 5px; max-height:43dvh; border-radius:13px; }
+ .game-window .challenge-layout,.game-window .feedback { grid-template-columns:1fr; gap:8px; }
+ .game-window #challenge { padding:8px 10px; }
+ .game-window .rune-text { font-size:20px; }
+ .game-window .challenge-note { font-size:10px; }
+ .game-window .command-heading { font-size:9px; }
+ .game-window .doors-heading p { display:none; }
+ .game-window #loadout-panel { top:116px; }
+ .game-window footer { padding:0 10px 5px; }
+ #scene-doors .door-option { width:21cqw; min-width:0; padding:5px 3px; gap:3px; flex-direction:column; border-radius:8px; top:8%; }
+ #scene-doors .door-option>.sprite { transform:scale(.75); margin:-4px; }
+ #scene-doors .dragon-door-art { width:24px; height:24px; flex-basis:24px; }
+ #scene-doors .door strong { font-size:12px; }
+ #scene-doors .door small,#scene-doors .door em { font-size:10px; }
+ #scene-doors .door kbd { display:none; }
+}
+@media(max-height:650px) and (min-width:701px) {
+ .game-window .hero-hud { min-height:60px; padding:6px 12px; }
+ .game-window .command-panel { max-height:42dvh; }
+ .game-window .dungeon-rule { padding-top:0; padding-bottom:2px; }
+ .game-window #challenge { padding-top:5px; padding-bottom:8px; }
+}
+.game-window .stage-heading>span { color:var(--room-ink); }
+/* Keep game dialogs visually bounded by the adventure frame. */
+body[data-view="dungeon"] #modal { position:fixed; inset:80px 16px 20px; margin:auto; height:fit-content; max-height:calc(100dvh - 120px); width:min(680px,calc(100vw - 48px)); }
+body[data-view="dungeon"] #modal::backdrop { background:linear-gradient(transparent 62px,#24173170 62px); backdrop-filter:none; }
+@media(max-width:700px) {
+ .game-window .hero-hud { display:grid; grid-template-columns:34px repeat(4,minmax(0,1fr)) auto; gap:6px; }
+ .game-window .portrait { grid-column:1; }
+ .game-window .vitals { grid-column:2/6; min-width:0; }
+ .game-window .hero-hud>.hud-stat:not(.xp-stat):not(.streak-stat) { grid-column:6; }
+ .game-window .xp-stat { grid-column:1/3; }
+ .game-window .streak-stat { grid-column:3; }
+ .game-window .loadout-toggle { grid-column:4/6; margin:0; justify-content:center; padding:4px; }
+ .game-window .potion-button { grid-column:6; }
+ .game-window .potion-button kbd { display:none; }
+ .game-window .potion-button small { font-size:8px; }
+ .game-window #loadout-panel { top:106px; }
+}
+
+
+/* Readable interaction panel with generous pointer and touch targets. */
+.game-window .command-panel { max-height:48dvh; }
+.game-window .command-heading { min-height:36px; height:auto; padding:8px 18px; font-size:13px; }
+.game-window #turn-label { font-size:12px; }
+.game-window .dungeon-rule { padding:8px 18px; font-size:14px; line-height:1.5; }
+.game-window #challenge { padding:16px 18px 20px; }
+.game-window #challenge-heading { font-size:26px; line-height:1.25; }
+.game-window .prompt,.game-window .feedback p,.game-window .challenge-note { font-size:15px; line-height:1.5; }
+.game-window .rune-text { font-size:28px; }
+.game-window .answer { min-height:56px; font-size:18px; padding:12px 14px; }
+.game-window .command-panel button:not(.answer) { min-height:48px; font-size:16px; padding:10px 14px; }
+.game-window .reward-line,.game-window .correct-answer { font-size:20px; }
+.game-window[data-phase="doors"] .doors-heading p { font-size:15px; line-height:1.5; }
+.game-window[data-phase="doors"] #challenge { padding-top:12px; }
+.game-window .passage-actions { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:16px; }
+.game-window .stage-heading { font-size:12px; }
+@media(max-width:700px) {
+ .game-window .command-panel { max-height:52dvh; }
+ .game-window .command-heading { font-size:11px; padding:8px 12px; }
+ .game-window #turn-label { font-size:10px; }
+ .game-window .dungeon-rule { padding:7px 12px; font-size:13px; }
+ .game-window #challenge { padding:12px; }
+ .game-window #challenge-heading { font-size:22px; }
+ .game-window .prompt,.game-window .feedback p,.game-window .challenge-note { font-size:14px; }
+ .game-window .rune-text { font-size:24px; }
+ .game-window .answer { min-height:52px; font-size:16px; padding:10px; }
+ .game-window .passage-actions { flex-wrap:wrap; gap:10px; }
+ .game-window .passage-actions button { width:100%; }
+}
+/* Size option cards against the illustration, not the wider letterboxed stage. */
+.game-window .scene-content { container-type:inline-size; }
+#scene-doors .door-option { width:21cqw; min-width:0; }
+@container(max-width:760px) {
+ #scene-doors .door-option { flex-direction:column; gap:3px; padding:6px 3px; top:10%; }
+ #scene-doors .door-option>.sprite { transform:scale(.8); margin:-3px; }
+ #scene-doors .door strong { font-size:13px; }
+ #scene-doors .door small,#scene-doors .door em { font-size:11px; }
+}
+/* Keep the label off the doorway so its silhouette remains visible. */
+#scene-doors .door-option { top:calc(100% + 10px); }
+#scene-doors .door-copy strong,#scene-doors .door-copy small,#scene-doors .door-copy em { margin:0; }
+#scene-doors .door-copy kbd { display:none; }
+@container(max-width:760px) {
+ #scene-doors .door-option { top:calc(100% + 6px); padding:4px 3px; gap:2px; }
+ #scene-doors .door-option>.sprite { transform:scale(.7); margin:-5px; }
+ #scene-doors .door strong { font-size:12px; line-height:1.2; }
+ #scene-doors .door small,#scene-doors .door em { font-size:11px; line-height:1.2; }
+}
+/* Compact windows scroll as one game instead of compressing the scene between HUD and commands. */
+@media(max-width:900px), (max-height:740px) {
+ body[data-view="dungeon"] { overflow-y:auto; }
+ .game-shell { height:auto; min-height:100dvh; grid-template-rows:auto auto; align-content:start; }
+ .game-window { min-height:0; grid-template-rows:auto auto auto auto; overflow:visible; }
+ .game-window .hero-hud { border-radius:20px 20px 0 0; }
+ .game-window .stage { min-height:0; grid-template-rows:auto auto auto; overflow:visible; }
+ .game-window .stage-heading,.game-window .route-strip { min-height:30px; }
+ .game-window .canvas-wrap { display:block; container-type:inline-size; overflow:visible; }
+ .game-window .scene-content { width:100%; height:auto; aspect-ratio:2 / 1; }
+ .game-window .scene-content canvas { display:block; width:100%; height:100%; min-height:0; aspect-ratio:2 / 1; object-fit:contain; }
+ .game-window[data-phase="doors"] .canvas-wrap { padding-bottom:72px; }
+ .game-window .command-panel { max-height:none; overflow:visible; }
+ .game-window #loadout-panel { position:fixed; top:12px; bottom:12px; right:12px; max-height:calc(100dvh - 24px); }
+ .game-window .command-heading { flex-wrap:wrap; gap:6px; }
+ .game-window .hero-hud { flex-wrap:wrap; }
+ .game-window .hud-stat { flex-shrink:0; }
+}
+@media(max-width:420px) {
+ .game-window[data-phase="doors"] .canvas-wrap { padding-bottom:88px; }
+ .game-window .stage-heading { font-size:10px; }
+ .game-window .vital-heading { flex-wrap:wrap; gap:3px; }
+ .game-window .vital-heading strong { font-size:14px; }
+ .game-window .vital-heading>span { font-size:12px; }
+ .game-window .hero-hud { grid-template-columns:30px repeat(4,minmax(0,1fr)) auto; }
+}
+/* Keep the room in view while longer questions and shops scroll underneath. */
+@media(max-width:700px) and (min-height:480px) {
+ .game-window .stage { position:sticky; top:0; z-index:2; box-shadow:0 3px 8px #0000000a; }
+}
+/* Short landscape windows have room beside the scene, not beneath it. */
+@media(min-width:701px) and (max-height:540px) {
+ .game-window { grid-template-columns:minmax(0,1fr) minmax(280px,.9fr); grid-template-rows:auto auto auto; }
+ .game-window .hero-hud,.game-window footer { grid-column:1/-1; }
+ .game-window .stage { grid-column:1; grid-row:2; position:sticky; top:0; align-self:start; }
+ .game-window .command-panel { grid-column:2; grid-row:2; margin:8px; }
+ .game-window .challenge-layout,.game-window .feedback { grid-template-columns:1fr; }
+ .game-window #challenge-heading { font-size:22px; }
+ .game-window .command-heading { font-size:11px; }
+ .game-window .passage-actions { flex-wrap:wrap; }
+}

@@ -141,7 +141,7 @@ export function createRenderer(canvas, getState) {
 
     (s.dungeon ? paintThemedAtmosphere : paintAtmosphere)(ctx, biome, rm.type, time);
 
-    let hx = 258, hy = 325, ex = 716, ey = 285;
+    let hx = s.phase === 'doors' ? 105 : 258, hy = 325, ex = 716, ey = 285;
     if (enemyMotion) ex += enemyMotion.dx;
     if (e?.type === 'enter' && !reduced) { hx -= (1 - p) * 100; hy += (1 - p) * 90; }
     if (e?.type === 'walk' && !reduced) { const ease = p * p * (3 - 2 * p); hx += ([264, 480, 696][e.lane] - hx) * ease; hy += (216 - hy) * ease; }

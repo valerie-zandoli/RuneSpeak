@@ -79,7 +79,7 @@ function renderHome() {
   $('guidebook').addEventListener('click',()=>{$('guide-start').onclick=()=>startQuiz('mixed');});
   $('profile-button').onclick=()=>openModal(`<div class="modal-kicker">YOUR LEARNING SO FAR</div><h2>Look at you go!</h2><div class="quiz-summary"><div><strong>${profile.xp}</strong><span>TOTAL XP</span></div><div><strong>${profile.lessons}</strong><span>QUIZZES</span></div><div><strong>${Object.keys(profile.words).length}</strong><span>DISCOVERIES</span></div></div><p>Quiz progress is saved locally in this browser. Your dungeon adventure has its own save, so you can switch between both.</p>`);
 }
-function openModal(html) { $('modal-content').innerHTML=html;if(!$('modal').open)$('modal').showModal(); }
+function openModal(html) { document.body.append($('modal')); $('modal-content').innerHTML=html;if(!$('modal').open)$('modal').showModal(); }
 function showWords() {
   const entries=Object.entries(profile.words);
   openModal(`<div class="modal-kicker">YOUR WORD COLLECTION</div><h2>A little wiser, every lesson.</h2><p>${entries.length?'Here’s what you’ve practiced in Spanish quizzes.':'Finish a Spanish quiz to start your collection. Your dungeon discoveries live in its journal.'}</p>${entries.map(([id,data])=>{const q=questions.find(q=>q.id===id);return q?`<div class="journal-row"><div><strong>${esc(q.type==='order'?q.answer:q.es)}</strong><p>${esc(q.explanation)}</p></div><span>${data.correct?'✓ Learned':'↻ Practice'}</span></div>`:'';}).join('')}`);
