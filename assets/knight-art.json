@@ -1,0 +1,103 @@
+{
+  "source": "Approved knight-aligned.png (copied as knight-approved.png)",
+  "tool": "Built-in image generation",
+  "image": "knight-poses.png",
+  "dimensions": [
+    1536,
+    1024
+  ],
+  "frames": [
+    {
+      "name": "idle",
+      "rect": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "anchor": [
+        260,
+        505
+      ]
+    },
+    {
+      "name": "travel",
+      "rect": [
+        512,
+        0,
+        512,
+        512
+      ],
+      "anchor": [
+        260,
+        504
+      ]
+    },
+    {
+      "name": "anticipation",
+      "rect": [
+        1024,
+        0,
+        512,
+        503
+      ],
+      "anchor": [
+        260,
+        501
+      ]
+    },
+    {
+      "name": "strike",
+      "rect": [
+        0,
+        512,
+        590,
+        512
+      ],
+      "anchor": [
+        240,
+        481
+      ]
+    },
+    {
+      "name": "defend",
+      "rect": [
+        590,
+        512,
+        434,
+        512
+      ],
+      "anchor": [
+        190,
+        479
+      ]
+    },
+    {
+      "name": "salute",
+      "rect": [
+        1024,
+        503,
+        512,
+        521
+      ],
+      "anchor": [
+        280,
+        493
+      ]
+    }
+  ],
+  "displayScale": 0.28515625,
+  "events": {
+    "attack": "idle -> anticipation (.18-.38) -> strike (.38-.64) -> defend recovery (.64-.78) -> idle",
+    "grammar": "same cycle with salute as casting action",
+    "hurt": "defend",
+    "rewards": "salute",
+    "won": "salute",
+    "lost": "defend with renderer opacity"
+  },
+  "intentionalReuse": "Defend also serves recovery and defeat; salute also serves spell, healing, treasure and victory.",
+  "reducedMotion": "Static strike/defend/salute feedback; no time-dependent travel; existing renderer suppresses movement.",
+  "mechanics": "Knight ID unchanged; 120 HP and 6 block preserved. Existing audio and save compatibility retained.",
+  "cropNotes": "Strike extends into verified empty padding before next figure at x605. Salute tip starts y504; crop starts y503. Anticipation ends y501 and crop ends y503.",
+  "prompt": "Derive a production RuneSpeak animation sprite sheet from this approved knight image. Preserve EXACT identity: big white eyes brown oval pupils, brown swept hair, raised silver helmet, silver and cobalt blue armor, brown gloves belt, blue kite shield LEFT hand (viewer right) and silver sword RIGHT hand. Clean flat rounded 2D illustration matching reference. Transparent background, no glow or ground shadows. Landscape 3 columns by 2 rows of equal square cells, ideally 1536x1024. SIX full-body poses in reading order: 0 idle sword pointing down-left as reference; 1 walking right; 2 anticipation sword raised back ready to strike; 3 action sword thrust/slash extended toward RIGHT enemy, shield stays held; 4 defend crouch with shield raised toward right and sword held safely; 5 victory sword raised salute. Same character height, head proportions, equipment, facing slightly right, feet near 90% of each cell, consistent camera. Every entire character and weapon strictly inside its own cell with generous 8% blank margin on all sides. Especially raised swords must stay inside their cells. No figure crosses neighboring cell. No labels, grid lines, particles, duplicate limbs, text or scenery. True transparent alpha."
+}

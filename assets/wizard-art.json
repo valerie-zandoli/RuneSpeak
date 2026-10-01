@@ -1,0 +1,10 @@
+{
+  "character": "Wizard",
+  "abilities": "100 health; +12 grammar spell damage",
+  "source": "Approved wizard-concept.png",
+  "dimensions": "1536 x 1024 RGBA",
+  "prompt": "Preserve approved older playful wizard, white beard, floppy purple hat, purple robes with yellow trim, wooden staff and golden crystal. Six full-body poses on a 3x2 sheet: idle, walk, anticipation, staff cast to right, hurt, victory. Same identity and scale, transparent background, no text or effects.",
+  "tool": "Built-in image generation",
+  "asset": "wizard-poses.png",
+  "migration": "Legacy arcanist saves migrate to wizard"
+}
