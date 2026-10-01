@@ -1,0 +1,194 @@
+{
+  "source": "Approved fallen-*-v2.png artwork created and simplified in this chat",
+  "tool": "built-in image_gen",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "palettes": {
+    "ranger": "forest green / ivory / brown",
+    "warrior": "blue / ivory / brass",
+    "wizard": "purple / ivory / teal"
+  },
+  "states": [
+    "idle",
+    "anticipation",
+    "attack",
+    "hurt"
+  ],
+  "events": {
+    "hurt": "enemy anticipation 0-.18, release .18-.55, recovery .55-.72, idle afterward",
+    "attack": "enemy hurt .4-.76; lethal hit holds hurt while fading/collapsing until .9"
+  },
+  "intentionalReuse": "Hurt pose used for defeat with collapse and fade. No enemy travel event. Reduced motion retains pose feedback without movement or projectiles.",
+  "frameMetadata": "skeleton-art.js exports measured source rectangles, feet anchors, scale and projectile origins.",
+  "prompts": {
+    "ranger": "Edit the supplied approved skeleton ranger into a 2 by 2 equal-cell animation pose sheet on genuine transparent background. Preserve EXACT identity, simplified flat art, costume, skull, color palette, equipment and proportions from source. No redesign or added detail. Four entire full-body figures, one in each equal quadrant with generous 12 percent padding inside EACH cell. All face LEFT toward a game opponent. Same character height and foot baseline within every cell. Top-left idle, top-right drawing bow with nocked arrow aimed LEFT; bottom-left bow release aimed LEFT with empty string and NO arrow (projectile added by game); bottom-right hurt recoil still standing. Equipment attached correctly, exactly two arms and two legs per pose. No labels, borders, effects, shadows, scenery or floating objects. Square 1536 by 1536 sheet if possible. Keep all props entirely inside their own cell.",
+    "warrior": "Edit the supplied approved skeleton warrior into a 2 by 2 equal-cell animation pose sheet on genuine transparent background. Preserve EXACT identity, simplified flat art, costume, skull, color palette, equipment and proportions from source. No redesign or added detail. Four entire full-body figures, one in each equal quadrant with generous 12 percent padding inside EACH cell. All face LEFT toward a game opponent. Same character height and foot baseline within every cell. Top-left idle, top-right raising sword in anticipation while shield stays held; bottom-left sword strike extended LEFT toward opponent; bottom-right hurt recoil still standing. Equipment attached correctly, exactly two arms and two legs per pose. No labels, borders, effects, shadows, scenery or floating objects. Square 1536 by 1536 sheet if possible. Keep all props entirely inside their own cell.",
+    "wizard": "Edit the supplied approved skeleton wizard into a 2 by 2 equal-cell animation pose sheet on genuine transparent background. Preserve EXACT identity, simplified flat art, costume, skull, color palette, equipment and proportions from source. No redesign or added detail. Four entire full-body figures, one in each equal quadrant with generous 12 percent padding inside EACH cell. All face LEFT toward a game opponent. Same character height and foot baseline within every cell. Top-left idle, top-right gathering magic with staff raised; bottom-left thrust staff LEFT to cast from teal crystal, no visible spell or particles; bottom-right hurt recoil still standing. Equipment attached correctly, exactly two arms and two legs per pose. No labels, borders, effects, shadows, scenery or floating objects. Square 1536 by 1536 sheet if possible. Keep all props entirely inside their own cell."
+  },
+  "frames": {
+    "ranger": [
+      {
+        "rect": [
+          0,
+          0,
+          650,
+          640
+        ],
+        "anchor": [
+          345,
+          617
+        ]
+      },
+      {
+        "rect": [
+          650,
+          0,
+          604,
+          640
+        ],
+        "anchor": [
+          990,
+          618
+        ]
+      },
+      {
+        "rect": [
+          0,
+          640,
+          650,
+          614
+        ],
+        "anchor": [
+          386,
+          1228
+        ]
+      },
+      {
+        "rect": [
+          650,
+          640,
+          604,
+          614
+        ],
+        "anchor": [
+          965,
+          1228
+        ]
+      }
+    ],
+    "warrior": [
+      {
+        "rect": [
+          0,
+          0,
+          650,
+          640
+        ],
+        "anchor": [
+          369,
+          622
+        ]
+      },
+      {
+        "rect": [
+          650,
+          0,
+          604,
+          640
+        ],
+        "anchor": [
+          974,
+          623
+        ]
+      },
+      {
+        "rect": [
+          0,
+          640,
+          650,
+          614
+        ],
+        "anchor": [
+          443,
+          1161
+        ]
+      },
+      {
+        "rect": [
+          650,
+          640,
+          604,
+          614
+        ],
+        "anchor": [
+          990,
+          1165
+        ]
+      }
+    ],
+    "wizard": [
+      {
+        "rect": [
+          0,
+          0,
+          650,
+          640
+        ],
+        "anchor": [
+          350,
+          611
+        ]
+      },
+      {
+        "rect": [
+          650,
+          0,
+          604,
+          640
+        ],
+        "anchor": [
+          914,
+          612
+        ]
+      },
+      {
+        "rect": [
+          0,
+          640,
+          650,
+          614
+        ],
+        "anchor": [
+          451,
+          1183
+        ]
+      },
+      {
+        "rect": [
+          650,
+          640,
+          604,
+          614
+        ],
+        "anchor": [
+          980,
+          1188
+        ]
+      }
+    ]
+  },
+  "displayScale": {
+    "ranger": 0.24955436720142601,
+    "warrior": 0.28865979381443296,
+    "wizard": 0.24647887323943662
+  },
+  "visibleIdleHeight": 140,
+  "styleRevision": {
+    "description": "Edited existing skeleton pose sheets to match the supplied RuneSpeak hero reference sheets. Broad rounded flat shapes, simplified bones, brighter class colors; 140px visible idle height.",
+    "tool": "built-in image_gen",
+    "prompt": "EDIT IMAGE 1, the existing four-pose skeleton sprite sheet. Image 2 is ONLY the game's hero ART STYLE reference, not a replacement character or layout. Make image 1 SIGNIFICANTLY SIMPLER to blend with image 2: clean playful flat 2D geometric vector-like art, broad rounded shapes, bright clear colors, at most base color plus ONE simple shadow per material. Remove ALL painterly facets, gradient shading, surface texture, scratches, small armor layers, tiny buckles/ornament details and busy cloth folds. Reduce ragged edges to just 2 or 3 large notches per outfit, simplify ribcage to three broad curved bone bars, simplify hands into chunky mitten-like skeletal shapes with 2 finger divisions, feet into simple rounded shapes. Skull is one smooth ivory shape, two simple dark sockets with teal dots, tiny triangle nose, just two tooth divisions. Keep recognizable same fallen hero, same main costume, same equipment, same colored class identity. Keep EXACT 1254 x 1254 canvas, four existing poses, each figure's existing placement, scale, facing, feet baseline, prop positions and hand connections. Preserve all source frame boundaries. Do not reposition or resize characters. Same idle, windup, attack release, hurt poses in same locations. No arrow remaining in bottom-left ranger release. Real transparent background, no shadows, glows, labels or scenery. Do not copy background from image 2. This must look clearly simpler and friendlier, not merely recolored.",
+    "warriorRepair": "Uniform spacing repair to retain complete sword, shield and boots inside each pose crop."
+  }
+}

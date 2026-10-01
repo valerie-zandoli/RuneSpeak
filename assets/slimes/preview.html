@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RuneSpeak · Slimes</title>
+<style>body{margin:0;background:#f7f3fc;color:#422b62;font:17px system-ui;text-align:center}main{max-width:960px;margin:24px auto}canvas{width:100%;height:auto;display:block;border-radius:20px}button,select{font:inherit;padding:10px;margin:6px;border-radius:10px;border:1px solid #c1afd8;background:white}p{padding:0 15px}</style>
+<main><h1>Classic dungeon slimes</h1><p>Round jelly · tall droplet · wide puddle<br>Green · blue · purple</p>
+<select id="pose" aria-label="Pose"><option value="0">Idle</option><option value="1">Wind-up</option><option value="2">Attack</option><option value="3">Recovery</option><option value="4">Hurt</option><option value="5">Defeat</option></select><button id="animate">Play attack</button>
+<canvas width="960" height="720" aria-label="Nine slime varieties on the dungeon background"></canvas></main>
+<script type="module">
+import {drawSlime,slimeSheet,slimePose} from '../../slime-art.js';
+import {paintDungeon} from '../../dungeon-art.js';
+const ctx=document.querySelector('canvas').getContext('2d'), models=['jelly','droplet','puddle'], palettes=['green','blue','purple'], images={};
+await Promise.all(models.map(async model=>{const image=new Image();image.src='../../'+slimeSheet(model);await image.decode();images[model]=image;}));
+let start=0;document.querySelector('#animate').onclick=()=>start=performance.now();
+function draw(now){ctx.save();ctx.scale(1,1.5);paintDungeon(ctx,0,false,0);ctx.restore();
+models.forEach((model,row)=>palettes.forEach((palette,col)=>drawSlime(ctx,images[model],{model,palette,pose:start&&now-start<1050?slimePose({type:'hurt'},(now-start)/1050):Number(document.querySelector('#pose').value),x:170+col*310,feet:195+row*225})));requestAnimationFrame(draw);}requestAnimationFrame(draw);
+</script></html>

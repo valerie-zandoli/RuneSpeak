@@ -1,0 +1,24 @@
+GOBLIN ARMORED WARBAND
+
+User decisions: Three goblin enemies: Skirmisher, Shaman, Fighter. Mischievous and scrappy. Armored warband with mismatched scrap armor. One transparent full-body dungeon pose per variant.
+
+Deliverables: three 1254 x 1254 RGBA PNGs, generated with the built-in image generation tool. Transparency verified. Individual concepts, not animated or integrated in a game.
+
+Visual direction: oversized ears, expressive faces, green skin, battered slate steel, brown leather and brass details. Rust-red cloth on Skirmisher and Fighter; purple robes and turquoise crystal on Shaman. Colors are proposed project choices, not official Duolingo colors. Rendered art uses more shading and metal wear than strict flat vectors. Poses are three-quarter views; Shaman faces opposite the other two in the generated output.
+
+Source: https://blog.duolingo.com/shape-language-duolingos-art-style/
+Reference principles: simplified recognizable shapes, expressive exaggeration, clear silhouettes, breathing room. No existing approved RuneSpeak artwork was supplied for direct comparison.
+
+REPRODUCTION PROMPTS
+
+Shared prompt:
+Use case: stylized-concept. Create an original RuneSpeak goblin enemy game illustration. Bright, rounded, minimal flat vector-like shapes inspired by Duolingo's shape-language principles, NOT its mascots. Oversized expressive head and ears, compact body, readable shapes at small dungeon size; green skin, dark green simple shadows, off-white eyes, tiny fangs, slate blue battered steel scrap armor, brown leather straps, restrained warm brass rivets. Mischievous and scrappy armored warband. Simple large color regions, no fine texture, no intricate detailing, no realistic rendering, no outlines or only subtle shape boundaries. One character only, one full-body neutral ready pose, three-quarter view facing toward viewer's left. All feet, ears, weapons and props fully inside image with generous clear padding. Square composition, transparent background with real alpha, no ground, no scenery, no cast shadow, no labels, no text or branding.
+
+SKIRMISHER
+SKIRMISHER: lean narrow agile silhouette, huge swept ears, sly toothy grin, raised eyebrow. Light asymmetrical mismatched scrap shoulder plate and patched breastplate with rust-red cloth accent. Exactly two short broad daggers, one visibly gripped in each hand, held apart from body angled down and out. Slight bent-kneed ready stance, readable separated legs, small boots. Large simple head, no helmet.
+
+SHAMAN
+SHAMAN: hunched compact silhouette, huge ears protruding from a deep purple hood, mischievous theatrical squint and crooked grin. Purple short robe with mismatched scrap steel shoulder plates and leather belt. One tall simple wooden staff held firmly in one hand, topped with one chunky turquoise crystal held in a metal socket. Other hand raised in a simple spell-casting gesture; no detached magic effects. Feet visible beneath robe. Keep staff and face separate and unobscured.
+
+FIGHTER
+FIGHTER: broad squat stocky silhouette, stubborn cocky scowl, two small fangs, huge ears. Oversized mismatched slate steel breastplate, one bigger shoulder plate, simple battered open helmet that leaves face and ears visible, rust-red cloth tabard. Exactly one short broad sword held visibly in one hand and one round battered iron shield strapped to opposite forearm. Sword held out and downward, shield off to side so face, body and two booted legs remain readable. Sturdy planted ready stance.

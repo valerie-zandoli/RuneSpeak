@@ -1,0 +1,285 @@
+{
+  "tool": "Built-in image_gen",
+  "approvedConcept": "approved-concept.png",
+  "styleSource": "https://blog.duolingo.com/shape-language-duolingos-art-style/",
+  "models": {
+    "jelly": {
+      "width": 1536,
+      "height": 1024,
+      "idleWidth": 391,
+      "displayWidth": 128,
+      "frames": [
+        {
+          "state": "idle",
+          "rect": [
+            56,
+            133,
+            397,
+            320
+          ],
+          "anchor": [
+            254.5,
+            450
+          ]
+        },
+        {
+          "state": "anticipation",
+          "rect": [
+            545,
+            252,
+            420,
+            218
+          ],
+          "anchor": [
+            755,
+            467
+          ]
+        },
+        {
+          "state": "attack",
+          "rect": [
+            1027,
+            212,
+            475,
+            243
+          ],
+          "anchor": [
+            1264.5,
+            452
+          ]
+        },
+        {
+          "state": "recovery",
+          "rect": [
+            46,
+            699,
+            432,
+            240
+          ],
+          "anchor": [
+            262,
+            936
+          ]
+        },
+        {
+          "state": "hurt",
+          "rect": [
+            567,
+            625,
+            400,
+            313
+          ],
+          "anchor": [
+            767,
+            935
+          ]
+        },
+        {
+          "state": "defeat",
+          "rect": [
+            1043,
+            754,
+            450,
+            181
+          ],
+          "anchor": [
+            1268,
+            932
+          ]
+        }
+      ]
+    },
+    "droplet": {
+      "width": 1536,
+      "height": 1024,
+      "idleWidth": 352,
+      "displayWidth": 112,
+      "frames": [
+        {
+          "state": "idle",
+          "rect": [
+            66,
+            94,
+            358,
+            415
+          ],
+          "anchor": [
+            245,
+            506
+          ]
+        },
+        {
+          "state": "anticipation",
+          "rect": [
+            553,
+            200,
+            369,
+            310
+          ],
+          "anchor": [
+            737.5,
+            507
+          ]
+        },
+        {
+          "state": "attack",
+          "rect": [
+            1009,
+            254,
+            484,
+            255
+          ],
+          "anchor": [
+            1251,
+            506
+          ]
+        },
+        {
+          "state": "recovery",
+          "rect": [
+            42,
+            677,
+            427,
+            248
+          ],
+          "anchor": [
+            255.5,
+            922
+          ]
+        },
+        {
+          "state": "hurt",
+          "rect": [
+            610,
+            581,
+            331,
+            344
+          ],
+          "anchor": [
+            775.5,
+            922
+          ]
+        },
+        {
+          "state": "defeat",
+          "rect": [
+            1039,
+            772,
+            454,
+            153
+          ],
+          "anchor": [
+            1266,
+            922
+          ]
+        }
+      ]
+    },
+    "puddle": {
+      "width": 1536,
+      "height": 1024,
+      "idleWidth": 436,
+      "displayWidth": 152,
+      "frames": [
+        {
+          "state": "idle",
+          "rect": [
+            23,
+            219,
+            442,
+            239
+          ],
+          "anchor": [
+            244,
+            455
+          ]
+        },
+        {
+          "state": "anticipation",
+          "rect": [
+            520,
+            295,
+            444,
+            166
+          ],
+          "anchor": [
+            742,
+            458
+          ]
+        },
+        {
+          "state": "attack",
+          "rect": [
+            1004,
+            280,
+            512,
+            183
+          ],
+          "anchor": [
+            1260,
+            460
+          ]
+        },
+        {
+          "state": "recovery",
+          "rect": [
+            28,
+            626,
+            458,
+            198
+          ],
+          "anchor": [
+            257,
+            821
+          ]
+        },
+        {
+          "state": "hurt",
+          "rect": [
+            524,
+            636,
+            462,
+            188
+          ],
+          "anchor": [
+            755,
+            821
+          ]
+        },
+        {
+          "state": "defeat",
+          "rect": [
+            1018,
+            676,
+            489,
+            148
+          ],
+          "anchor": [
+            1262.5,
+            821
+          ]
+        }
+      ]
+    }
+  },
+  "palettes": {
+    "green": "none",
+    "blue": "hue-rotate(100deg)",
+    "purple": "hue-rotate(140deg)"
+  },
+  "paletteMethod": "Canvas hue rotation of the same base green sheet. No shape or alpha differences between recolors.",
+  "sourcePrompts": {
+    "jelly": "Using the attached approved slime concept as identity reference, create ONE transparent animation sprite sheet for ONLY the GREEN TOP ROW round dome jelly with scalloped base. Preserve that specific slime's identity, face, silhouette character, saturated green, single light green highlight and darker green base. No blue or purple variants in this image. EXACTLY six full-body poses arranged in a strict 3 columns by 2 rows equal-cell grid. Row 1: (1) neutral idle facing slightly LEFT toward hero, (2) anticipation squashed down winding up, (3) attack body stretched horizontally LEFT in a springing body-slam with determined expression. Row 2: (4) recovery landing squash, (5) hurt recoiling with eyes squeezed shut and small open mouth, (6) defeated flattened puddle with closed eyes. All six are same species and design; no limbs or props. For low puddle keep all states low and wide. For tall droplet maintain the soft hooked tip except defeat. Clean polished rounded vector-like game illustration with minimal details, white eyes and neutral charcoal pupils/mouth. Solid body with truly transparent surrounding background. Consistent scale and floor baseline in each equal cell, ample padding on ALL sides, complete isolated figures. No text, labels, panel lines, particles, scenery, ground shadows, stray flecks, blur, glow or motion trails. Do not include other varieties. Landscape sheet 3:2 aspect ratio.",
+    "droplet": "Using the attached approved slime concept as identity reference, create ONE transparent animation sprite sheet for ONLY the GREEN MIDDLE ROW tall droplet with bent tip. Preserve that specific slime's identity, face, silhouette character, saturated green, single light green highlight and darker green base. No blue or purple variants in this image. EXACTLY six full-body poses arranged in a strict 3 columns by 2 rows equal-cell grid. Row 1: (1) neutral idle facing slightly LEFT toward hero, (2) anticipation squashed down winding up, (3) attack body stretched horizontally LEFT in a springing body-slam with determined expression. Row 2: (4) recovery landing squash, (5) hurt recoiling with eyes squeezed shut and small open mouth, (6) defeated flattened puddle with closed eyes. All six are same species and design; no limbs or props. For low puddle keep all states low and wide. For tall droplet maintain the soft hooked tip except defeat. Clean polished rounded vector-like game illustration with minimal details, white eyes and neutral charcoal pupils/mouth. Solid body with truly transparent surrounding background. Consistent scale and floor baseline in each equal cell, ample padding on ALL sides, complete isolated figures. No text, labels, panel lines, particles, scenery, ground shadows, stray flecks, blur, glow or motion trails. Do not include other varieties. Landscape sheet 3:2 aspect ratio.",
+    "puddle": "Using the attached approved slime concept as identity reference, create ONE transparent animation sprite sheet for ONLY the GREEN BOTTOM ROW wide low puddle with sleepy eyelids. Preserve that specific slime's identity, face, silhouette character, saturated green, single light green highlight and darker green base. No blue or purple variants in this image. EXACTLY six full-body poses arranged in a strict 3 columns by 2 rows equal-cell grid. Row 1: (1) neutral idle facing slightly LEFT toward hero, (2) anticipation squashed down winding up, (3) attack body stretched horizontally LEFT in a springing body-slam with determined expression. Row 2: (4) recovery landing squash, (5) hurt recoiling with eyes squeezed shut and small open mouth, (6) defeated flattened puddle with closed eyes. All six are same species and design; no limbs or props. For low puddle keep all states low and wide. For tall droplet maintain the soft hooked tip except defeat. Clean polished rounded vector-like game illustration with minimal details, white eyes and neutral charcoal pupils/mouth. Solid body with truly transparent surrounding background. Consistent scale and floor baseline in each equal cell, ample padding on ALL sides, complete isolated figures. No text, labels, panel lines, particles, scenery, ground shadows, stray flecks, blur, glow or motion trails. Do not include other varieties. Landscape sheet 3:2 aspect ratio."
+  },
+  "corrections": "Jelly hurt and puddle attack/hurt repaired with image_gen to remove unwanted hooked tips.",
+  "events": {
+    "enter": "recovery landing then idle",
+    "hurt": "idle > anticipation > body-slam > recovery > idle",
+    "attack": "idle > hurt > idle; on cleared, defeat at .62 then fade at .75-.9",
+    "reducedMotion": "static action/hurt/defeat poses; no lunge, breathing or hop"
+  },
+  "intentionalReuse": "Idle is reused for travel outside encounters; recovery is reused for room entry. All three colors share each model's six frames.",
+  "compatibility": "Existing slime ID and encounter odds retained; room.variant selects shape; existing palettes map teal/moss to green, ember to blue, violet to purple. Legacy room.variant=0 slime resolves to green jelly. No stat or save schema changes."
+}

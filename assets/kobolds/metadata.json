@@ -1,0 +1,288 @@
+{
+  "tool": "built-in image_gen",
+  "source": "Approved simplified enemy kobolds from Design kobold variants, 2026-10-01",
+  "styleReference": "https://blog.duolingo.com/shape-language-duolingos-art-style/",
+  "dimensions": [
+    1536,
+    1024
+  ],
+  "states": [
+    "idle",
+    "anticipation",
+    "action",
+    "recovery",
+    "hurt",
+    "defeat"
+  ],
+  "events": {
+    "hurt": "Enemy anticipation .10-.22, action .22-.50, recovery .50-.86, idle .86+",
+    "attack": "Enemy hurt .40-.78; defeat .62+ when cleared",
+    "enter": "Reuse idle; enemies do not travel between rooms",
+    "reducedMotion": "Static action/hurt/defeat poses; no lunge, bob, shake or projectile"
+  },
+  "palettes": {
+    "skirmisher": "rust-red, peach, brown",
+    "scout": "teal, mint, mustard",
+    "shaman": "violet, lavender, turquoise, gold"
+  },
+  "models": {
+    "skirmisher": {
+      "height": 112,
+      "idleHeight": 334,
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            256,
+            445
+          ]
+        },
+        {
+          "rect": [
+            512,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            768,
+            448
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            1300,
+            443
+          ]
+        },
+        {
+          "rect": [
+            0,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            256,
+            934
+          ]
+        },
+        {
+          "rect": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            768,
+            939
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            1280,
+            936
+          ]
+        }
+      ],
+      "emission": null
+    },
+    "scout": {
+      "height": 108,
+      "idleHeight": 294,
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            275,
+            429
+          ]
+        },
+        {
+          "rect": [
+            512,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            787,
+            428
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            1310,
+            428
+          ]
+        },
+        {
+          "rect": [
+            0,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            275,
+            919
+          ]
+        },
+        {
+          "rect": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            787,
+            919
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            1280,
+            909
+          ]
+        }
+      ],
+      "emission": null
+    },
+    "shaman": {
+      "height": 116,
+      "idleHeight": 355,
+      "frames": [
+        {
+          "rect": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            265,
+            453
+          ]
+        },
+        {
+          "rect": [
+            512,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            777,
+            454
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            0,
+            512,
+            512
+          ],
+          "anchor": [
+            1320,
+            457
+          ]
+        },
+        {
+          "rect": [
+            0,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            265,
+            939
+          ]
+        },
+        {
+          "rect": [
+            512,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            777,
+            941
+          ]
+        },
+        {
+          "rect": [
+            1024,
+            512,
+            512,
+            512
+          ],
+          "anchor": [
+            1300,
+            926
+          ]
+        }
+      ],
+      "emission": [
+        1135,
+        184
+      ]
+    }
+  },
+  "prompts": [
+    {
+      "model": "skirmisher",
+      "source": "rust-kobold-skirmisher",
+      "prompt": "Create a production animation sprite sheet derived from this EXACT approved simplified enemy kobold. Preserve its identity, colors, outfit, claws, horns, large ears, curled tail, menacing face, simplified low-detail style with no spots and minimal shading. Landscape 1536x1024 transparent PNG, exactly 3 columns by 2 rows of equally sized 512x512 cells. NO lines or labels. Each cell has ONE complete full-body kobold facing LEFT in three-quarter view, same body proportions and scale across cells, head height about 170 pixels, standing full-body height about 360 pixels, ground baseline at local y=450, generous padding on every side. All weapons tails horns feet wholly inside each own cell, no overlaps or fragments from adjacent cells. Left-to-right top row: 1 idle menacing ready stance, 2 attack anticipation winding up, 3 attack action extending toward LEFT. Left-to-right bottom row: 4 recovery returning guard, 5 hurt recoiling slightly backward, 6 defeated slumped low seated with eyes closed, gear still held and tail visible. Defeat is non-graphic. Do not add decorative details, particles, scenery, floor, shadows, text, branding. True transparency. Spear skirmisher: anticipation draws the spear back, action thrusts spear toward LEFT with both hands gripping shaft. Keep the entire short spear inside every cell."
+    },
+    {
+      "model": "scout",
+      "source": "teal-kobold-scout",
+      "prompt": "Create a production animation sprite sheet derived from this EXACT approved simplified enemy kobold. Preserve its identity, colors, outfit, claws, horns, large ears, curled tail, menacing face, simplified low-detail style with no spots and minimal shading. Landscape 1536x1024 transparent PNG, exactly 3 columns by 2 rows of equally sized 512x512 cells. NO lines or labels. Each cell has ONE complete full-body kobold facing LEFT in three-quarter view, same body proportions and scale across cells, head height about 170 pixels, standing full-body height about 360 pixels, ground baseline at local y=450, generous padding on every side. All weapons tails horns feet wholly inside each own cell, no overlaps or fragments from adjacent cells. Left-to-right top row: 1 idle menacing ready stance, 2 attack anticipation winding up, 3 attack action extending toward LEFT. Left-to-right bottom row: 4 recovery returning guard, 5 hurt recoiling slightly backward, 6 defeated slumped low seated with eyes closed, gear still held and tail visible. Defeat is non-graphic. Do not add decorative details, particles, scenery, floor, shadows, text, branding. True transparency. Unarmed claw scout: anticipation crouches and draws claw back, action swipes its claw toward LEFT. Keep yellow scarf and belt pouch."
+    },
+    {
+      "model": "shaman",
+      "source": "violet-kobold-shaman",
+      "prompt": "Create a production animation sprite sheet derived from this EXACT approved simplified enemy kobold. Preserve its identity, colors, outfit, claws, horns, large ears, curled tail, menacing face, simplified low-detail style with no spots and minimal shading. Landscape 1536x1024 transparent PNG, exactly 3 columns by 2 rows of equally sized 512x512 cells. NO lines or labels. Each cell has ONE complete full-body kobold facing LEFT in three-quarter view, same body proportions and scale across cells, head height about 170 pixels, standing full-body height about 360 pixels, ground baseline at local y=450, generous padding on every side. All weapons tails horns feet wholly inside each own cell, no overlaps or fragments from adjacent cells. Left-to-right top row: 1 idle menacing ready stance, 2 attack anticipation winding up, 3 attack action extending toward LEFT. Left-to-right bottom row: 4 recovery returning guard, 5 hurt recoiling slightly backward, 6 defeated slumped low seated with eyes closed, gear still held and tail visible. Defeat is non-graphic. Do not add decorative details, particles, scenery, floor, shadows, text, branding. True transparency. Ranged shaman: anticipation draws free claw close to chest, action extends free claw toward LEFT while staff crystal also angles slightly left. Keep staff in its original hand throughout, all of staff visible. No baked-in magic effects."
+    }
+  ],
+  "repairPrompt": "Repair ONLY the sprite sheet layout. Preserve all six existing poses and their character design, colors, face, outfit and flat simplified detail. Keep image 1536x1024, 3 columns and 2 rows with 512x512 cells. SCALE EVERY FIGURE DOWN to about 70% of its current size, independently center each FULL figure in its own cell. All standing poses share feet baseline local y=430. Every part of each character including long weapons must have at least 60px transparent margin to its own cell edges. Very important: top right action figure must fit ENTIRELY inside x=1084..1476 and y=60..450, with no spear or hand extending into middle cell. Lower middle figure must fit entirely inside x=572..964 and y=572..962. Every figure is fully isolated with wide transparent gutters between all 6 figures. Do not clip or shorten any equipment, do not add content. True transparent background, no colored mist, no floor, no shadows, no panels or labels."
+}
