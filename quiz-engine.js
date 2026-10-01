@@ -1,11 +1,13 @@
 import { questions } from './content.js';
 import { rng, shuffle } from './engine.js';
+import { extraVocabulary, extraGrammar, lessonPools } from './learning-content.js';
 
 export function createQuiz(seed, mode = 'mixed') {
   const random = rng(seed);
   let pool;
-  if (mode === 'vocabulary') pool = shuffle(questions.filter(q => q.id.startsWith('v')), random).slice(0, 10);
-  else if (mode === 'grammar') pool = shuffle(questions.filter(q => q.id.startsWith('g')), random).slice(0, 10);
+  if (lessonPools[mode]) pool = mode === 'stories' ? [...lessonPools[mode]] : shuffle(lessonPools[mode], random).slice(0,10);
+  else if (mode === 'vocabulary') pool = [...shuffle(questions.filter(q => q.id.startsWith('v')), random).slice(0,5), ...shuffle(extraVocabulary,random).slice(0,5)];
+  else if (mode === 'grammar') pool = [...shuffle(questions.filter(q => q.id.startsWith('g')), random).slice(0,5), ...shuffle(extraGrammar,random).slice(0,5)];
   else pool = shuffle([
     ...shuffle(questions.filter(q => q.id.startsWith('v')), random).slice(0, 4),
     ...shuffle(questions.filter(q => q.id.startsWith('g')), random).slice(0, 3),
