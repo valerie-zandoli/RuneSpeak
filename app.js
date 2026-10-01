@@ -58,7 +58,7 @@ function renderHud() {
   $('dungeon-rule').textContent = dungeonStatus(state);
   $('dungeon-rule').title = dungeonFor(state) ? `${dungeonFor(state).description} ${dungeonFor(state).tradeoff}` : dungeonStatus(state);
   $('room-label').textContent = `ROOM ${String(state.depth + 1).padStart(2, '0')} / 09`;
-  $('room-name').textContent = state.phase === 'select' ? 'The adventure awaits' : state.phase === 'doors' ? 'Choose your passage' : room(state).type === 'boss' ? enemyLabel(room(state)) : t.name;
+  $('room-name').textContent = state.phase === 'select' ? 'The adventure awaits' : state.phase === 'doors' ? 'Choose your passage' : room(state).type === 'boss' ? enemyLabel(room(state)) : room(state).treasureMimic ? 'The chest is a mimic!' : t.name;
   $('encounter-type').textContent = state.phase === 'select' ? 'CHOOSE YOUR HERO' : state.phase === 'doors' ? 'YOUR NEXT ENCOUNTER' : `${t.label} / ${(room(state).type === 'boss' ? enemyForRoom(room(state)).breathLabel : t.mechanic).toUpperCase()}`;
   const combat = ['battle', 'spell', 'boss'].includes(room(state).type);
   $('enemy-status').hidden = !combat || ['select', 'doors', 'won'].includes(state.phase) || (state.enemyHp === 0 && !busy);
@@ -112,7 +112,7 @@ function render() {
     }
   }
   if (room(state).type === 'shop' && state.phase === 'challenge') {
-    $('challenge').insertAdjacentHTML('beforeend', '<button class="secondary" id="leave-shop">LEAVE SHOP →</button>');
+    $('challenge').insertAdjacentHTML('afterbegin', '<button class="primary shop-exit" id="leave-shop">EXIT SHOP →</button>');
     $('leave-shop').onclick = exitShop;
   }
   paintSprites();
@@ -137,12 +137,12 @@ function exitShop() {
 }
 function renderShop() {
   const unlocked = state.feedback.correct;
-  $('challenge').innerHTML = `<section class="shop-panel"><h2 id="challenge-heading">${unlocked ? 'Welcome to the relic shop.' : 'A little practice before we trade.'}</h2><p class="correct-answer">${esc(state.feedback.answer)}</p><p>${esc(state.feedback.explanation)}</p>
+  $('challenge').innerHTML = `<section class="shop-panel"><button class="primary shop-exit" id="leave-shop">EXIT SHOP →</button><h2 id="challenge-heading">${unlocked ? 'Welcome to the relic shop.' : 'A little practice before we trade.'}</h2><p class="correct-answer">${esc(state.feedback.answer)}</p><p>${esc(state.feedback.explanation)}</p>
     ${unlocked ? `<p><strong>${state.gold} gold available</strong> · Relics go into your backpack. Equip them whenever you like.</p><div class="shop-stock">${shopStock(state).map(({id,price}) => {
       const item = items[id], owned = state.inventory.includes(id), short = Math.max(0,price-state.gold);
       return `<article class="shop-relic">${sprite(item.tile)}<small>${item.rarity} · ${item.slot.toUpperCase()}</small><h3>${item.name}</h3><p>${item.effect}</p><button data-buy-relic="${id}" ${owned || short ? 'disabled' : ''}>${owned ? 'IN BACKPACK' : 'BUY · '+price+' GOLD'}</button>${!owned && short ? '<small>Need '+short+' more gold</small>' : ''}${owned ? '<button class="secondary" data-shop-equip="'+id+'">'+(state.equipment[item.slot]===id ? 'UNEQUIP' : 'EQUIP')+'</button>' : ''}</article>`;
     }).join('')}</div>` : '<p>No health or gold lost. Try another translation, or continue your journey.</p><button class="primary" id="continue">TRY AGAIN →</button>'}
-    <button class="secondary" id="leave-shop">LEAVE SHOP →</button></section>`;
+    </section>`;
   $('leave-shop').onclick = exitShop;
   if ($('continue')) $('continue').onclick = () => { if(busy) return; proceed(state); save(); render(); };
   document.querySelectorAll('[data-buy-relic]').forEach(button => button.onclick = () => {
@@ -156,7 +156,7 @@ function renderFeedback() {
   if (room(state).type === 'shop') return renderShop();
   const f = state.feedback;
   const title = !f.correct ? (f.damage ? 'A mistake. A chance to learn.' : 'The blessing slips away.') : f.cleared ? 'Encounter cleared!' : 'A clean hit. Keep fighting.';
-  const rewards = [f.dealt && ['battle', 'spell', 'boss'].includes(room(state).type) ? `${f.dealt} DAMAGE` : '', f.damage ? `−${f.damage} HP` : '', f.heal ? `+${f.heal} HP` : '', f.gain ? `+${f.gain} GOLD` : '', f.correct && room(state).type === 'treasure' ? '+1 POTION' : ''].filter(Boolean).join(' · ');
+  const rewards = [f.dealt && ['battle', 'spell', 'boss'].includes(room(state).type) ? `${f.dealt} DAMAGE` : '', f.damage ? `−${f.damage} HP` : '', f.heal ? `+${f.heal} HP` : '', f.gain ? `+${f.gain} GOLD` : '', f.correct && f.cleared && (room(state).type === 'treasure' || room(state).treasureMimic) ? '+1 POTION' : ''].filter(Boolean).join(' · ');
   $('challenge').innerHTML = `<div class="feedback ${f.correct ? '' : 'bad'}"><div><h2 id="challenge-heading" class="feedback-title">${title}</h2><div class="correct-answer">${esc(f.answer)}</div><p>${esc(f.explanation)}</p><div class="reward-line">${rewards}</div>${f.quirk ? `<p class="quirk-feedback">${esc(f.quirk)}</p>` : ''}</div><div class="feedback-actions">${lootCard()}<button class="primary" id="continue">${state.enemyHp > 0 ? 'NEXT ATTACK →' : state.depth === 8 ? 'LEAVE THE DUNGEON →' : 'CHOOSE A PASSAGE →'}</button>${state.loot ? '<span class="challenge-note">Loot is in your backpack. Equip now or later.</span>' : ''}</div></div>`;
   if ($('equip-drop')) $('equip-drop').onclick = () => equipItem(state.loot);
   $('continue').onclick = () => { if (busy) return; proceed(state); selected = []; save(); render(); $('scene-banner').textContent = ''; };
@@ -172,7 +172,7 @@ function renderDoors() {
   $('scene-doors').style.setProperty('--arch-top', (arch.top / 480 * 100) + '%');
   $('scene-doors').style.setProperty('--arch-height', (h / 480 * 100) + '%');
   $('scene-doors').style.setProperty('--arch-width', (w / 960 * 100) + '%');
-  $('challenge').innerHTML = `<div class="doors-heading"><h2 id="challenge-heading">Choose your next encounter.</h2><p>Choose a doorway in the room. Risk includes your armor.</p></div><div class="doors">${state.levels[state.depth + 1].map((r, i) => { const t = types[r.type]; return `<button class="door" data-door="${i}"><svg class="door-outline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${outline}"/></svg><span class="door-option">${r.type === 'boss' ? `<span class="dragon-door-art" style="background-image:url('assets/dragons/${enemyForRoom(r).dragon}-approved.png')" aria-hidden="true"></span>` : sprite(t.tile)}<span class="door-copy"><strong><kbd>${i + 1}</kbd> ${r.type === 'boss' ? enemyLabel(r) : t.label}</strong><small>${r.type === 'boss' ? enemyForRoom(r).breathLabel : t.mechanic}</small><em>${incomingDamage(state, r.type)} HP RISK${r.type === 'treasure' ? ' · LOOT' : r.type === 'shrine' ? ' · +30 HP' : r.type === 'shop' ? ' · RELICS FOR GOLD' : ''}</em></span></span></button>`; }).join('')}</div><div class="passage-actions"><span class="challenge-note">Prepare your gear before moving on.</span><button id="buy-potion" class="secondary" ${state.gold < 40 ? 'disabled' : ''}>BUY POTION · 40 GOLD</button></div>`;
+  $('challenge').innerHTML = `<div class="doors-heading"><h2 id="challenge-heading">Choose your next encounter.</h2><p>Choose a doorway in the room. Risk includes your armor.</p></div><div class="doors">${state.levels[state.depth + 1].map((r, i) => { const t = types[r.treasureMimic ? 'treasure' : r.type]; return `<button class="door" data-door="${i}"><svg class="door-outline" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${outline}"/></svg><span class="door-option">${r.type === 'boss' ? `<span class="dragon-door-art" style="background-image:url('assets/dragons/${enemyForRoom(r).dragon}-approved.png')" aria-hidden="true"></span>` : sprite(t.tile)}<span class="door-copy"><strong><kbd>${i + 1}</kbd> ${r.type === 'boss' ? enemyLabel(r) : t.label}</strong><small>${r.type === 'boss' ? enemyForRoom(r).breathLabel : t.mechanic}</small><em>${incomingDamage(state, r.treasureMimic ? 'treasure' : r.type)} HP RISK${(r.type === 'treasure' || r.treasureMimic) ? ' · LOOT' : r.type === 'shrine' ? ' · +30 HP' : r.type === 'shop' ? ' · RELICS FOR GOLD' : ''}</em></span></span></button>`; }).join('')}</div><div class="passage-actions"><span class="challenge-note">Prepare your gear before moving on.</span><button id="buy-potion" class="secondary" ${state.gold < 40 ? 'disabled' : ''}>BUY POTION · 40 GOLD</button></div>`;
   $('scene-doors').appendChild($('challenge').querySelector('.doors'));
   document.querySelectorAll('[data-door]').forEach(button => button.onclick = () => moveTo(+button.dataset.door));
   $('buy-potion').onclick = () => { if (buyPotion(state)) { save(); render(); toast('Potion purchased · −40 gold'); } };
@@ -290,6 +290,14 @@ $('close-modal').onclick = () => $('modal').close();
 document.addEventListener('keydown', event => {
   if (document.body.dataset.view !== 'dungeon' || busy || $('modal').open || $('hero-select').open || event.ctrlKey || event.metaKey || event.altKey || ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
   const key = event.key.toLowerCase();
+  // Developer shortcut: use the same submission path, rewards and animation as a real answer.
+  if (key === '=' && !event.repeat && !event.target.isContentEditable && state.phase === 'challenge') {
+    event.preventDefault();
+    const q = question(state);
+    if (q.kind === 'order') submit(q.answer);
+    else document.querySelector('[data-answer="' + q.options.indexOf(q.answer) + '"]')?.click();
+    return;
+  }
   if (key === 'h') $('potion').click(); if (key === 'i') showInventory(); if (key === 'j') showJournal();
   const index = Number(key) - 1;
   if (index >= 0 && index < 4) document.querySelector(state.phase === 'doors' ? `[data-door="${index}"]` : `[data-answer="${index}"]`)?.click();

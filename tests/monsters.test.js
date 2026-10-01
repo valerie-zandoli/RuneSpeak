@@ -18,13 +18,15 @@ test('all 27 variants spawn only in their home dungeon and survive route changes
       assert.equal(s.enemyRoster, 5);
       for (const rm of s.levels.flat()) {
         const e = enemyForRoom(rm);
-        if (e?.monster) { assert.equal(e.dungeon, dungeon); seen.add(e.id); all.add(e.id); }
+        if (rm.treasureMimic) assert.equal(e.family, 'vault-mimic');
+        else if (e?.monster) { assert.equal(e.dungeon, dungeon); seen.add(e.id); all.add(e.id); }
       }
       let previous = enemyVariantKey(room(s));
       for (let depth = 1; depth < 9; depth++) {
         s.phase = 'doors'; assert(choose(s, (n + depth) % 3));
         const e = enemyForRoom(room(s)), key = enemyVariantKey(room(s));
-        if (e?.monster) assert.equal(e.dungeon, dungeon);
+        if (room(s).treasureMimic) assert.equal(e.family, 'vault-mimic');
+        else if (e?.monster) assert.equal(e.dungeon, dungeon);
         if (key) { assert.notEqual(key, previous); previous = key; }
         const loaded = restore(JSON.stringify(s)); assert.deepEqual(loaded, s); s = loaded;
       }

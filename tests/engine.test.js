@@ -27,7 +27,7 @@ test('character selection changes health and locks after entry', () => {
 test('seeded routes are reproducible and room two offers loot and spell paths', () => {
   assert.deepEqual(createRun('HOLA'), createRun('HOLA'));
   assert.notDeepEqual(createRun('HOLA').levels, createRun('OTRO').levels);
-  assert.deepEqual(createRun('HOLA').levels[1].map(r => r.type), ['spell', 'treasure', 'shrine']);
+  assert.deepEqual(createRun('HOLA').levels[1].map(r => r.treasureMimic ? 'treasure' : r.type), ['spell', 'treasure', 'shrine']);
 });
 test('all three classes can complete 60 seeded runs with combat, loot, and final boss', () => {
   for (const hero of Object.keys(heroes)) for (let n = 0; n < 60; n++) {

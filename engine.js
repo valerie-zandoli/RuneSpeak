@@ -46,10 +46,11 @@ export function stats(s) {
   for (const id of Object.values(s.equipment)) { if (!items[id]) continue; for (const key of Object.keys(result)) result[key] += items[id][key] || 0; }
   return result;
 }
-export function createRun(seed, hero = 'wizard', enemyRoster = latestEnemyRoster, dungeon = null, shopRoutes = 1) {
+export function createRun(seed, hero = 'wizard', enemyRoster = latestEnemyRoster, dungeon = null, shopRoutes = 1, chestMimics = enemyRoster >= 5 ? 1 : 0) {
   if (!heroes[hero]) hero = 'wizard';
   if (dungeon !== null && !Object.hasOwn(dungeons, dungeon)) throw new RangeError('Unknown dungeon');
   const battleEnemies = battleRoster(enemyRoster, dungeon);
+  const mimics = battleRoster(5).filter(enemy => enemy.family === 'vault-mimic');
   const levels = Array.from({ length: 9 }, (_, depth) => {
     let trio = shuffle(['battle', 'spell', 'treasure', 'trap', 'shrine', ...(shopRoutes ? ['shop'] : [])], rng(`${seed}:routes:${depth}`)).slice(0, 3);
     if (depth === 0) trio = ['battle', 'battle', 'battle'];
@@ -67,13 +68,18 @@ export function createRun(seed, hero = 'wizard', enemyRoster = latestEnemyRoster
         enemyId: type === 'boss' ? dragonBosses[lane].id : battleEnemies[Math.floor(rng(`${seed}:enemy:${depth}:${lane}`)() * battleEnemies.length)].id,
         palette: cyclopsPalettes[Math.floor(rng(`${seed}:palette:${depth}:${lane}`)() * cyclopsPalettes.length)],
       } : {}),
+      // Independent, stable coin flip: doors remain disguised as treasure until entry.
+      ...(type === 'treasure' && chestMimics && rng(seed + ':mimic:' + depth + ':' + lane)() < .5 ? {
+        type: 'battle', treasureMimic: true,
+        enemyId: mimics[Math.floor(rng(seed + ':mimic-variant:' + depth + ':' + lane)() * mimics.length)].id,
+      } : {}),
     }));
   });
-  return { version: 2, ...(shopRoutes ? { shopRoutes: 1 } : {}), enemyRoster, ...(dungeon ? { dungeon, runeCharge: false, echoQuestionId: null } : {}), seed, hero, levels, depth: 0, lane: 1, hp: heroes[hero].maxHp, gold: 0, potions: 2, streak: 0, bestStreak: 0, correct: 0, attempts: 0, phase: 'select', enemyHp: 48, enemyMax: 48, turn: 0, questionId: null, journal: [], path: [], used: [], inventory: [], equipment: { weapon: null, armor: null, charm: null }, loot: null, feedback: null, log: ['A new adventurer arrives at camp.'] };
+  return { version: 2, ...(chestMimics ? { chestMimics: 1 } : {}), ...(shopRoutes ? { shopRoutes: 1 } : {}), enemyRoster, ...(dungeon ? { dungeon, runeCharge: false, echoQuestionId: null } : {}), seed, hero, levels, depth: 0, lane: 1, hp: heroes[hero].maxHp, gold: 0, potions: 2, streak: 0, bestStreak: 0, correct: 0, attempts: 0, phase: 'select', enemyHp: 48, enemyMax: 48, turn: 0, questionId: null, journal: [], path: [], used: [], inventory: [], equipment: { weapon: null, armor: null, charm: null }, loot: null, feedback: null, log: ['A new adventurer arrives at camp.'] };
 }
 export function selectDungeon(s, dungeon) {
   if (s.phase !== 'select' || !Object.hasOwn(dungeons, dungeon)) return false;
-  Object.assign(s, createRun(s.seed, s.hero, s.enemyRoster ?? 2, dungeon));
+  Object.assign(s, createRun(s.seed, s.hero, s.enemyRoster ?? 2, dungeon, s.shopRoutes ?? 0, s.chestMimics ?? 0));
   return true;
 }
 export function selectHero(s, hero) { if (s.phase !== 'select' || !heroes[hero]) return false; s.hero = hero; s.hp = maxHealth(s); return true; }
@@ -96,7 +102,7 @@ function avoidEnemyRepeats(s) {
     let key = enemyVariantKey(rm);
     if (!key) continue;
     if (key === previous && rm.type !== 'boss') {
-      const candidates = battleRoster(s.enemyRoster ?? 1, s.dungeon).filter(enemy => enemy.id !== enemyForRoom(rm).id);
+      const candidates = (rm.treasureMimic ? battleRoster(5).filter(enemy => enemy.family === 'vault-mimic') : battleRoster(s.enemyRoster ?? 1, s.dungeon)).filter(enemy => enemy.id !== enemyForRoom(rm).id);
       rm.enemyId = candidates[Math.floor(rng(s.seed + ':no-repeat:' + depth + ':' + lane)() * candidates.length)].id;
       key = enemyVariantKey(rm);
     }
@@ -162,9 +168,9 @@ export function answer(s, value) {
   }
   const cleared = s.enemyHp === 0;
   if (correct && cleared && type !== 'shop') {
-    gain = Math.round((t.gold + (s.streak >= 3 ? 5 : 0)) * (1 + bonuses.gold)); s.gold += gain;
-    if (type === 'treasure') s.potions++;
-    if (type === 'treasure' || s.depth === 0 || (combat && rng(`${s.seed}:drop:${s.depth}:${s.lane}`)() < .55)) dropLoot(s);
+    gain = Math.round(((room(s).treasureMimic ? types.treasure.gold : t.gold) + (s.streak >= 3 ? 5 : 0)) * (1 + bonuses.gold)); s.gold += gain;
+    if (type === 'treasure' || room(s).treasureMimic) s.potions++;
+    if (type === 'treasure' || room(s).treasureMimic || s.depth === 0 || (combat && rng(`${s.seed}:drop:${s.depth}:${s.lane}`)() < .55)) dropLoot(s);
   }
   s.feedback = { correct, answer: q.answer, explanation: q.explanation, gain, heal, damage, dealt, cleared, kind: q.kind, ...(quirk ? { quirk } : {}) };
   s.phase = s.hp === 0 ? 'lost' : 'feedback';
@@ -241,8 +247,9 @@ export function restore(raw) {
       if (s.runeCharge && s.dungeon !== 'runic') return null;
       if (s.echoQuestionId !== null && (s.dungeon !== 'crypt' || s.echoQuestionId !== s.questionId || !challengeBank.some(q => q.id === s.echoQuestionId))) return null;
     }
+    if (s.chestMimics !== undefined && s.chestMimics !== 1) return null;
     if (s.shopRoutes !== undefined && s.shopRoutes !== 1) return null;
-    s.levels = createRun(s.seed, s.hero, s.enemyRoster ?? 1, s.dungeon ?? null, s.shopRoutes ?? 0).levels;
+    s.levels = createRun(s.seed, s.hero, s.enemyRoster ?? 1, s.dungeon ?? null, s.shopRoutes ?? 0, s.chestMimics ?? 0).levels;
     avoidEnemyRepeats(s);
     return s;
   } catch { return null; }

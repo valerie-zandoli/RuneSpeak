@@ -207,3 +207,7 @@ body[data-view="dungeon"] #modal::backdrop { background:linear-gradient(transpar
  .game-window .command-heading { font-size:11px; }
  .game-window .passage-actions { flex-wrap:wrap; }
 }
+
+/* Put the exit before the challenge and stock, with a generous high-contrast target. */
+.game-window .command-panel #leave-shop.shop-exit { display:block; width:100%; min-height:56px; margin:0 0 18px; padding:14px 20px; font-size:18px; font-weight:900; background:#7851b0; color:#fff; border:2px solid #65458b; border-bottom-width:5px; border-radius:12px; }
+.game-window .command-panel #leave-shop.shop-exit:hover { background:#65458b; }

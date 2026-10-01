@@ -64,6 +64,10 @@ Progress and the current run's journal save only in this browser. Starting anoth
 
 ## Structure
 
+Developer shortcut: while answering a dungeon challenge, press `=` to submit the correct answer through the normal combat/reward flow. It also completes word-order questions. It is ignored during animations, dialogs, text entry, and outside the dungeon.
+
+New expeditions give each treasure chest a seeded 50/50 chance of being one of the three Vault Mimics. Treasure doors hide the result until entry; defeating a mimic grants the chest's equipment, potion, and gold rewards. Existing saves preserve their original chests.
+
 - `engine.js`: deterministic generation and game-state transitions
 - `content.js`: Spanish vocabulary, grammar, and sentence challenges
 - `renderer.js`: animated Canvas 2D dungeon using a bundled tile atlas
