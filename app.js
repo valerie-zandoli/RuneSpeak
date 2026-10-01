@@ -1,4 +1,4 @@
-import { createRun, start, room, types, heroes, items, stats, maxHealth, selectHero, selectDungeon, incomingDamage, attackPower, question, answer, proceed, choose, drink, equip, buyPotion, shopStock, buyRelic, leaveShop, restore, challengeBank } from './engine.js';
+import { charmSlots, isEquipped, createRun, start, room, types, heroes, items, stats, maxHealth, selectHero, selectDungeon, incomingDamage, attackPower, question, answer, proceed, choose, drink, equip, buyPotion, shopStock, buyRelic, leaveShop, restore, challengeBank } from './engine.js';
 import { dungeons, dungeonFor, dungeonBiome, dungeonStatus } from './dungeons.js';
 import { paintDungeon } from './themed-dungeon-art.js';
 import { createRenderer } from './renderer.js';
@@ -46,9 +46,12 @@ function renderHud() {
   $('hero-portrait').innerHTML = sprite(hero.tile); $('hero-name').textContent = hero.name;
   $('hero-passive').textContent = `${hero.passive} · ${hero.description}`;
   $('health').textContent = `${state.hp} / ${maxHealth(state)}`;
+  $('hero-scene-health').textContent = state.hp + ' / ' + maxHealth(state) + ' HP';
+  $('hero-scene-fill').style.width = (state.hp / maxHealth(state) * 100) + '%';
+  $('hero-status').hidden = ['select', 'doors', 'won'].includes(state.phase);
   $('health-fill').style.width = `${state.hp / maxHealth(state) * 100}%`;
   $('health-bar').setAttribute('aria-valuenow', state.hp); $('health-bar').setAttribute('aria-valuemin', 0); $('health-bar').setAttribute('aria-valuemax', maxHealth(state));
-  $('gold').textContent = `◈ ${state.gold}`; $('streak').textContent = `${state.streak} ×`;
+  $('gold').innerHTML = `<span class="gold-coin" aria-hidden="true"></span>${state.gold}`; $('streak').textContent = `${state.streak} ×`;
   $('potions').textContent = `${state.potions} left · +35 HP`;
   $('potion').disabled = busy || !state.potions || state.hp >= maxHealth(state) || ['select', 'won', 'lost'].includes(state.phase);
   $('inventory').disabled = busy; $('new-run').disabled = busy;
@@ -62,6 +65,7 @@ function renderHud() {
   $('encounter-type').textContent = state.phase === 'select' ? 'CHOOSE YOUR HERO' : state.phase === 'doors' ? 'YOUR NEXT ENCOUNTER' : `${t.label} / ${(room(state).type === 'boss' ? enemyForRoom(room(state)).breathLabel : t.mechanic).toUpperCase()}`;
   const combat = ['battle', 'spell', 'boss'].includes(room(state).type);
   $('enemy-status').hidden = !combat || ['select', 'doors', 'won'].includes(state.phase) || (state.enemyHp === 0 && !busy);
+  $('enemy-name').hidden = $('enemy-status').hidden;
   $('enemy-name').textContent = room(state).type === 'boss' && state.enemyHp < state.enemyMax / 2 ? enemyLabel(room(state)).toUpperCase() + ' · ENRAGED' : enemyLabel(room(state)).toUpperCase();
   $('enemy-status').classList.toggle('cyclops', Boolean(enemyForRoom(room(state))?.model));
   $('enemy-status').classList.toggle('slime', Boolean(enemyForRoom(room(state))?.slimeModel));
@@ -75,12 +79,12 @@ function renderHud() {
   $('canvas-hint').textContent = state.phase === 'doors' ? 'THE PASSAGES ARE OPEN · CHOOSE A DOOR' : state.phase === 'won' ? 'THE LAST SEAL IS BROKEN. YOU ARE FREE.' : state.phase === 'lost' ? 'THE DUNGEON REMEMBERS YOUR COURAGE.' : t.hint.toUpperCase();
   $('seed-label').textContent = `SEED ${state.seed}`;
   $('map').innerHTML = Array.from({ length: 9 }, (_, i) => `<span class="map-node ${i === state.depth ? 'current' : ''} ${i < state.depth || state.phase === 'won' ? 'done' : ''}" aria-label="Room ${i + 1}${i === state.depth ? ', current' : ''}">${i < state.depth || state.phase === 'won' ? '·' : i === 8 ? '♜' : i + 1}</span>`).join('');
-  $('equipment').innerHTML = ['weapon', 'armor', 'charm'].map((slot, i) => {
+  $('equipment').innerHTML = ['weapon', 'armor', ...charmSlots].map((slot, i) => {
     const item = items[state.equipment[slot]];
-    return `<button class="gear-slot ${item ? '' : 'empty'}" data-slot="${slot}" ${busy ? 'disabled' : ''} aria-label="${slot}: ${item ? esc(item.name) + '. ' + esc(item.effect) : 'empty'}. Open backpack"><span class="slot-icon">${sprite(item?.tile ?? [heroes[state.hero].weapon, 101, 56][i])}</span><span><small>${slot.toUpperCase()}</small><strong>${item ? esc(item.name) : 'Empty slot'}</strong><span class="gear-bonus">${item ? esc(item.effect) : 'Find loot in the dungeon'}</span></span></button>`;
+    return `<button class="gear-slot ${item ? '' : 'empty'}" data-slot="${slot}" ${busy ? 'disabled' : ''} aria-label="${slot}: ${item ? esc(item.name) + '. ' + esc(item.effect) : 'empty'}. Open backpack"><span class="slot-icon">${sprite(item?.tile ?? [heroes[state.hero].weapon, 101, 56, 56, 56][i])}</span><span><small>${(charmSlots.includes(slot) ? 'CHARM ' + (charmSlots.indexOf(slot) + 1) : slot.toUpperCase())}</small><strong>${item ? esc(item.name) : 'Empty slot'}</strong><span class="gear-bonus">${item ? esc(item.effect) : 'Find loot in the dungeon'}</span></span></button>`;
   }).join('');
   $('combat-stats').innerHTML = `<span>ATK <b>${bonuses.attack}</b></span><span>SPELL <b>+${bonuses.spell}</b></span><span>BLOCK <b>${bonuses.armor}</b></span><span>GOLD <b>+${Math.round(bonuses.gold * 100)}%</b></span>`;
-  $('bag-count').textContent = `${state.inventory.length} / 8`;
+  $('bag-count').textContent = `${state.inventory.length} / ${Object.keys(items).length}`;
   $('trait-card').innerHTML = `<div class="trait-name">${hero.passive}</div><div class="trait-desc">${hero.description}</div><div class="trait-tag">PASSIVE · ALWAYS ACTIVE</div>`;
   $('log').innerHTML = state.log.map(line => `<li>${esc(line)}</li>`).join('');
   document.querySelectorAll('[data-slot]').forEach(button => button.onclick = showInventory);
@@ -103,11 +107,11 @@ function render() {
     const spell = q.kind === 'grammar';
     const shopping = room(state).type === 'shop';
     const instructions = shopping ? 'Help the merchant translate this word into Spanish to unlock the relic shop.' : q.kind === 'order' ? q.prompt : q.kind === 'reverse' ? 'Disarm the trap: which Spanish word matches?' : spell ? 'Complete the sentence to cast your spell.' : 'Translate the word to strike your opponent.';
-    $('challenge').innerHTML = `<div class="challenge-layout"><div><h2 id="challenge-heading">${shopping ? 'Speak the merchant’s language.' : spell ? 'Complete the incantation.' : q.kind === 'order' ? 'Arrange the ancient words.' : q.kind === 'reverse' ? 'Read the warning.' : 'Choose your strike.'}</h2><p class="prompt">${esc(instructions)}</p>${q.kind !== 'order' ? `<div class="rune-text" ${q.kind !== 'reverse' ? 'lang="es"' : ''}>${esc(q.es).replace('___', '<span class="blank">?</span>')}</div>` : ''}${['vocab', 'grammar'].includes(q.kind) ? '<button class="listen-button" id="listen">♪ Hear the inscription</button>' : ''}<div class="challenge-note">${['battle', 'spell', 'boss'].includes(room(state).type) ? `${Math.min(state.enemyHp, attackPower(state, q))} damage on a correct answer` : shopping ? 'Correct answer unlocks the shop' : t.action + ' the room'} · ${incomingDamage(state)} HP at risk</div></div><div id="answer-area"></div></div>`;
+    $('challenge').innerHTML = `<div class="challenge-layout"><div class="inscription-card"><h2 id="challenge-heading">${shopping ? 'Speak the merchant’s language.' : spell ? 'Complete the incantation.' : q.kind === 'order' ? 'Arrange the ancient words.' : q.kind === 'reverse' ? 'Read the warning.' : 'Choose your strike.'}</h2><p class="prompt">${esc(instructions)}</p>${q.kind !== 'order' ? `<div class="rune-text" ${q.kind !== 'reverse' ? 'lang="es"' : ''}>${esc(q.es).replace('___', '<span class="blank">?</span>')}</div>` : ''}${['vocab', 'grammar'].includes(q.kind) ? '<button class="listen-button" id="listen">♪ Listen</button>' : ''}<div class="challenge-note">${['battle', 'spell', 'boss'].includes(room(state).type) ? `${Math.min(state.enemyHp, attackPower(state, q))} damage on a correct answer` : shopping ? 'Correct answer unlocks the shop' : t.action + ' the room'} · ${incomingDamage(state)} HP at risk</div></div><div id="answer-area"></div></div>`;
     if ($('listen')) $('listen').onclick = speak;
     if (q.type === 'order') renderTokens(q);
     else {
-      $('answer-area').innerHTML = `<div class="answers ${q.kind}">${q.options.map((option, i) => `<button class="answer" data-answer="${i}"><kbd>${i + 1}</kbd><span ${q.kind !== 'vocab' ? 'lang="es"' : ''}>${esc(option)}</span></button>`).join('')}</div><div class="challenge-note">CHOOSE AN ANSWER · 1–4 OR CLICK</div>`;
+      $('answer-area').innerHTML = `<div class="answers ${q.kind}">${q.options.map((option, i) => `<button class="answer" data-answer="${i}"><kbd>${i + 1}</kbd><span ${q.kind !== 'vocab' ? 'lang="es"' : ''}>${esc(option)}</span></button>`).join('')}</div>`;
       document.querySelectorAll('[data-answer]').forEach(button => button.onclick = () => submit(q.options[+button.dataset.answer]));
     }
   }
@@ -128,7 +132,7 @@ function renderTokens(q) {
 
 function lootCard() {
   if (!state.loot) return '';
-  const item = items[state.loot], equipped = state.equipment[item.slot] === state.loot;
+  const item = items[state.loot], equipped = isEquipped(state, state.loot);
   return `<div class="loot-card">${sprite(item.tile)}<div><span class="rarity">${item.rarity} ${item.slot.toUpperCase()} · FOUND</span><strong>${item.name}</strong><small>${item.effect}</small></div><button id="equip-drop" ${equipped ? 'disabled' : ''}>${equipped ? 'EQUIPPED' : 'EQUIP'}</button></div>`;
 }
 function exitShop() {
@@ -137,10 +141,10 @@ function exitShop() {
 }
 function renderShop() {
   const unlocked = state.feedback.correct;
-  $('challenge').innerHTML = `<section class="shop-panel"><button class="primary shop-exit" id="leave-shop">EXIT SHOP →</button><h2 id="challenge-heading">${unlocked ? 'Welcome to the relic shop.' : 'A little practice before we trade.'}</h2><p class="correct-answer">${esc(state.feedback.answer)}</p><p>${esc(state.feedback.explanation)}</p>
-    ${unlocked ? `<p><strong>${state.gold} gold available</strong> · Relics go into your backpack. Equip them whenever you like.</p><div class="shop-stock">${shopStock(state).map(({id,price}) => {
+  $('challenge').innerHTML = `<section class="shop-panel"><header class="shop-header"><h2 id="challenge-heading">${unlocked ? 'Relic shop' : 'Try another translation'}</h2><button class="primary shop-exit" id="leave-shop">EXIT SHOP →</button></header><p class="shop-translation"><b>${esc(state.feedback.answer)}</b> · ${esc(state.feedback.explanation)}</p>
+    ${unlocked ? `<p class="shop-balance"><strong>${state.gold} gold</strong> · Purchases go to your backpack.</p><div class="shop-stock">${shopStock(state).map(({id,price}) => {
       const item = items[id], owned = state.inventory.includes(id), short = Math.max(0,price-state.gold);
-      return `<article class="shop-relic">${sprite(item.tile)}<small>${item.rarity} · ${item.slot.toUpperCase()}</small><h3>${item.name}</h3><p>${item.effect}</p><button data-buy-relic="${id}" ${owned || short ? 'disabled' : ''}>${owned ? 'IN BACKPACK' : 'BUY · '+price+' GOLD'}</button>${!owned && short ? '<small>Need '+short+' more gold</small>' : ''}${owned ? '<button class="secondary" data-shop-equip="'+id+'">'+(state.equipment[item.slot]===id ? 'UNEQUIP' : 'EQUIP')+'</button>' : ''}</article>`;
+      return `<article class="shop-relic">${sprite(item.tile)}<small>${item.rarity} · ${item.slot.toUpperCase()}</small><h3>${item.name}</h3><p>${item.effect}</p><button data-buy-relic="${id}" ${owned || short ? 'disabled' : ''}>${owned ? 'IN BACKPACK' : 'BUY · '+price+' GOLD'}</button>${!owned && short ? '<small>Need '+short+' more gold</small>' : ''}${owned ? '<button class="secondary" data-shop-equip="'+id+'">'+(isEquipped(state, id) ? 'UNEQUIP' : 'EQUIP')+'</button>' : ''}</article>`;
     }).join('')}</div>` : '<p>No health or gold lost. Try another translation, or continue your journey.</p><button class="primary" id="continue">TRY AGAIN →</button>'}
     </section>`;
   $('leave-shop').onclick = exitShop;
@@ -204,20 +208,26 @@ async function moveTo(lane) {
   choose(state, lane); selected = []; save(); render();
   await renderer.play({ type: 'enter' }); busy = false; render();
 }
-async function equipItem(id) {
-  if (busy || !equip(state, id)) return;
+async function equipItem(id, targetSlot = null) {
+  if (busy) return;
+  if (items[id].slot === 'charm' && !isEquipped(state, id) && !targetSlot && charmSlots.every(slot => state.equipment[slot])) {
+    modal('<h2>Choose a charm to replace.</h2><p>Your old charm stays in your backpack.</p>' + charmSlots.map((slot, i) => '<button class="charm-replace" data-replace="' + slot + '">Slot ' + (i + 1) + ': ' + esc(items[state.equipment[slot]].name) + '</button>').join(''));
+    document.querySelectorAll('[data-replace]').forEach(button => button.onclick = () => { equipItem(id, button.dataset.replace); showInventory(); });
+    return;
+  }
+  if (!equip(state, id, targetSlot)) return;
   save(); render();
-  toast(state.equipment[items[id].slot] === id ? `${items[id].name} equipped · ${items[id].effect}` : `${items[id].name} unequipped`);
-  renderer.play({ type: 'equip', slot: items[id].slot, equipped: state.equipment[items[id].slot] === id });
+  toast(isEquipped(state, id) ? `${items[id].name} equipped · ${items[id].effect}` : `${items[id].name} unequipped`);
+  renderer.play({ type: 'equip', slot: items[id].slot, equipped: isEquipped(state, id) });
 }
 function showInventory() {
   if (busy) return;
-  modal(`<div class="modal-kicker">BACKPACK / ${state.inventory.length} RELICS</div><h2>Your spoils of adventure.</h2><p>Equip one weapon, one armor, and one charm. Swapped items stay in your backpack. Bonuses apply immediately to the next answer.</p>${state.inventory.length ? `<div class="inventory-grid">${state.inventory.map(id => { const item = items[id], active = state.equipment[item.slot] === id; return `<div class="inventory-item ${active ? 'equipped' : ''}">${sprite(item.tile)}<div><div class="modal-kicker">${item.slot.toUpperCase()} · ${item.rarity}</div><strong>${item.name}</strong><p>${item.effect}</p><p>${item.lore}</p><button data-equip="${id}" ${['won', 'lost'].includes(state.phase) ? 'disabled' : ''}>${active ? 'UNEQUIP' : 'EQUIP'}</button></div></div>`; }).join('')}</div>` : '<p>Defeat your first enemy for a guaranteed weapon. Treasure rooms always drop equipment when unlocked.</p>'}`);
+  modal(`<div class="modal-kicker">BACKPACK / ${state.inventory.length} RELICS</div><h2>Your spoils of adventure.</h2><p>Equip one weapon, one armor, and up to three different charms. Their bonuses stack. Swapped items stay in your backpack. Bonuses apply immediately to the next answer.</p>${state.inventory.length ? `<div class="inventory-grid">${state.inventory.map(id => { const item = items[id], active = isEquipped(state, id); return `<div class="inventory-item ${active ? 'equipped' : ''}">${sprite(item.tile)}<div><div class="modal-kicker">${item.slot.toUpperCase()} · ${item.rarity}</div><strong>${item.name}</strong><p>${item.effect}</p><p>${item.lore}</p><button data-equip="${id}" ${['won', 'lost'].includes(state.phase) ? 'disabled' : ''}>${active ? 'UNEQUIP' : 'EQUIP'}</button></div></div>`; }).join('')}</div>` : '<p>Defeat your first enemy for a random relic. Charms are the most common drop. Treasure rooms always drop equipment when unlocked.</p>'}`);
   document.querySelectorAll('[data-equip]').forEach(button => button.onclick = () => {
     const id = button.dataset.equip;
     equipItem(id);
     if (items[id].slot === 'weapon' && state.equipment.weapon === id) $('modal').close();
-    else showInventory();
+    else if (!document.querySelector('[data-replace]')) showInventory();
   });
 }
 function showJournal() {
@@ -285,7 +295,7 @@ $('sound').onclick=()=>{
   });
 };
 $('help').onclick = () => modal('<div class="modal-kicker">ADVENTURER’S HANDBOOK</div><h2>Your words have consequences.</h2><p>Defeat enemies by reducing their health to zero. A correct answer attacks; a wrong answer makes the enemy retaliate. There is no timer.</p><ul><li><b>Melee:</b> translate Spanish vocabulary.</li><li><b>Spell duels:</b> fill in a missing word in a Spanish sentence.</li><li><b>Treasure and sanctuaries:</b> arrange Spanish words. Treasure grants equipment and a potion; sanctuaries restore 30 HP.</li><li><b>Traps:</b> translate English into Spanish.</li><li><b>Guardian:</b> cycles vocabulary, sentence completion, and word ordering.</li></ul><p>Equip loot in your backpack (I). Weapons improve attacks, armor reduces damage, and charms add passive bonuses. Gold buys potions between rooms. Press H to heal, J for your journal, and 1–4 for answers. Click sentence words to add or remove them.</p><p><b>Choose your dungeon:</b> The Whispering Crypt repeats missed combat questions with +12 recovery attack power. The Mossbound Halls heals 8 health every second consecutive correct answer, but traps deal 4 extra damage. The Runic Depths stores a charge on correct grammar for +18 on the next correct non-grammar combat hit; a mistake loses it.</p><p>Progress saves in this browser. This local version uses a separate save from the original demo. Sound is optional, and reduced-motion settings shorten animations.</p>');
-$('credits').onclick = () => modal('<div class="modal-kicker">ART & CREDITS</div><h2>Original art. Open-source roots.</h2><p>The Knight, Ranger, Wizard, cyclopes, and classic slimes use animated artwork generated from their approved character designs. Slimes share identical poses across green, blue, and purple reshades. The Fallen Ranger, Fallen Warrior, and Fallen Wizard use animated poses derived from their approved simplified skeleton artwork. The Kobold Skirmisher, Scout, and Shaman use six animated poses derived from their approved simplified enemy designs. The three goblins use approved single-pose generated illustrations with combat motion and effects. Cindermaw, Rimecoil, and Vesperthorn use six animated poses derived from their approved dragon designs, with procedural fire, blue fire, and acid breath. Candlewisps, Vault Mimics, Belfry Bats, Sporecaps, Bramblekin, Lantern Snails, Runestone Golems, Crystal Scarabs, and Spellbook Snappers each have three approved variants and six generated animation poses. Other creatures, scenery, and equipment are original RuneSpeak vector artwork. The earlier pixel-art demo used <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a> (CC0 1.0); its original assets and license remain bundled.</p><p>Fonts: Nunito, VT323, MedievalSharp, and Space Grotesk from Google Fonts (SIL Open Font License). System fonts are used if unavailable. RuneSpeak code is MIT licensed.</p>');
+$('credits').onclick = () => modal('<div class="modal-kicker">ART & CREDITS</div><h2>Original art. Open-source roots.</h2><p>The Knight, Ranger, Wizard, cyclopes, and classic slimes use animated artwork generated from their approved character designs. Slimes share identical poses across green, blue, and purple reshades. The Fallen Ranger, Fallen Warrior, and Fallen Wizard use animated poses derived from their approved simplified skeleton artwork. The Kobold Skirmisher, Scout, and Shaman use six animated poses derived from their approved simplified enemy designs. The three goblins use simplified generated artwork with six distinct animation poses, anchored weapon strikes, and a staff-tip spell cast. Cindermaw, Rimecoil, and Vesperthorn use six animated poses derived from their approved dragon designs, with procedural fire, blue fire, and acid breath. Candlewisps, Vault Mimics, Belfry Bats, Sporecaps, Bramblekin, Lantern Snails, Runestone Golems, Crystal Scarabs, and Spellbook Snappers each have three approved variants and six generated animation poses. Other creatures, scenery, and equipment are original RuneSpeak vector artwork. The earlier pixel-art demo used <a href="https://kenney.nl/assets/tiny-dungeon" target="_blank" rel="noopener">Tiny Dungeon by Kenney</a> (CC0 1.0); its original assets and license remain bundled.</p><p>Fonts: Nunito, VT323, MedievalSharp, and Space Grotesk from Google Fonts (SIL Open Font License). System fonts are used if unavailable. RuneSpeak code is MIT licensed.</p>');
 $('close-modal').onclick = () => $('modal').close();
 document.addEventListener('keydown', event => {
   if (document.body.dataset.view !== 'dungeon' || busy || $('modal').open || $('hero-select').open || event.ctrlKey || event.metaKey || event.altKey || ['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return;
@@ -302,5 +312,49 @@ document.addEventListener('keydown', event => {
   const index = Number(key) - 1;
   if (index >= 0 && index < 4) document.querySelector(state.phase === 'doors' ? `[data-door="${index}"]` : `[data-answer="${index}"]`)?.click();
 });
+// Reflow and fit every encounter, including long sentences and shop stock.
+// Measuring real content avoids guessed font sizes or hidden/scrolling answers.
+function installViewportFit() {
+  const frame = document.querySelector('.game-window');
+  const panel = document.querySelector('.command-panel');
+  frame.querySelector('.stage').prepend(frame.querySelector('.hero-hud'));
+  const content = document.createElement('div');
+  content.className = 'command-content';
+  content.append(...panel.childNodes); panel.append(content);
+  let pending = false;
+  function fit() {
+    pending = false;
+    if (document.body.dataset.view !== 'dungeon' || !frame.clientHeight) return;
+    const hud = 0; // The status controls now overlay the scene.
+    const footer = frame.querySelector('footer').getBoundingClientRect().height;
+    const available = Math.max(0, frame.clientHeight - hud - footer);
+    const doors = frame.dataset.phase === 'doors';
+    const sceneHeight = Math.min(frame.clientWidth / 2 + (doors ? 112 : 48), available * (doors ? .76 : .60));
+    frame.style.setProperty('--scene-row', sceneHeight + 'px');
+    const height = panel.clientHeight - 2;
+    const width = panel.clientWidth;
+    let low = .1, high = 1;
+    const fits = scale => {
+      content.style.zoom = scale;
+      return content.getBoundingClientRect().height <= height && content.scrollWidth * scale <= width + 1;
+    };
+    if (fits(1)) return;
+    for (let i = 0; i < 12; i++) {
+      const mid = (low + high) / 2;
+      if (fits(mid)) low = mid; else high = mid;
+    }
+    content.style.zoom = low;
+  }
+  function schedule() { if (!pending) { pending = true; requestAnimationFrame(fit); } }
+  new ResizeObserver(schedule).observe(frame);
+  new ResizeObserver(schedule).observe(frame.querySelector('.hero-hud'));
+  new MutationObserver(schedule).observe(content, { childList:true, subtree:true, characterData:true });
+  window.addEventListener('resize', schedule);
+  document.addEventListener('runespeak:enter', schedule);
+  document.fonts.ready.then(schedule);
+  schedule();
+}
+installViewportFit();
+
 render();
 document.addEventListener('runespeak:enter', () => { if(audio.settings.music||audio.settings.effects)audio.unlock(); render(); if (state.phase === 'select') showSelection(); });

@@ -67,7 +67,7 @@ export const audio={
       else note(blue?43:34,t+release,.34,.18,'triangle',effectsBus,-7);
       noise(t+hit,.18,.4,acid?1700:400);
     }
-    else if(type==='hurt'){const hit=(event.enemyKobold || event.enemyMonster)?(event.reducedMotion?0:.42):.3;if(event.enemyKobold==='shaman'&&!event.reducedMotion)note(79,t+.231,.18,.16,'sine',effectsBus,-12);noise(t+hit,.2,.55,350);note(47,t+hit,.32,.4,'triangle',effectsBus,-9);note(66,t+hit+.05,.19,.12,'sawtooth',effectsBus,-7);}
+    else if(type==='hurt'){const hit=(event.enemyKobold || event.enemyMonster || event.enemyGoblin)?(event.reducedMotion?0:.42):.3;if((event.enemyKobold==='shaman'||event.enemyGoblin==='shaman')&&!event.reducedMotion)note(79,t+.231,.18,.16,'sine',effectsBus,-12);noise(t+hit,.2,.55,350);note(47,t+hit,.32,.4,'triangle',effectsBus,-9);note(66,t+hit+.05,.19,.12,'sawtooth',effectsBus,-7);}
     else if(type==='treasure'){noise(t,.18,.3,750);[72,79,84,88,91].forEach((n,i)=>{note(n,t+.2+i*.11,.42,.3,'sine',effectsBus);note(n+12,t+.2+i*.11,.12,.08,'triangle',effectsBus);});}
     else if(type==='heal'||type==='shrine')play([67,72,76,79],.5);
     else if(type==='equip')play([76,84],.2);

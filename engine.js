@@ -28,6 +28,14 @@ export const items = {
   goldcharm: { name: 'Lucky doubloon', slot: 'charm', tile: 73, rarity: 'UNCOMMON', effect: '+25% gold rewards', gold: .25, lore: 'Fortune favors the well-spoken.' },
   sagecharm: { name: 'Sage’s tablet', slot: 'charm', tile: 65, rarity: 'RARE', effect: '+10 grammar-spell damage', spell: 10, lore: 'The margins are full of helpful notes.' },
 };
+Object.assign(items, {
+  embercharm: { name: 'Ember fang', slot: 'charm', tile: 130, rarity: 'UNCOMMON', effect: '+5 attack damage', attack: 5, lore: 'A spark that never quite cools.' },
+  wardcharm: { name: 'Guardian knot', slot: 'charm', tile: 56, rarity: 'UNCOMMON', effect: 'Block 2 incoming damage', armor: 2, lore: 'Three loops to keep trouble out.' },
+  bloomcharm: { name: 'Dewdrop pendant', slot: 'charm', tile: 116, rarity: 'UNCOMMON', effect: 'Heal 2 on every correct answer', heal: 2, lore: 'Morning dew held in amber.' },
+  quillcharm: { name: 'Runic quill', slot: 'charm', tile: 65, rarity: 'UNCOMMON', effect: '+6 grammar-spell damage', spell: 6, lore: 'Every sentence leaves a little magic.' },
+});
+export const charmSlots = ['charm', 'charm2', 'charm3'];
+export const isEquipped = (s, id) => Object.values(s.equipment).includes(id);
 export const types = {
   shop: { name: 'The wandering merchant', label: 'SHOP', mechanic: 'Translate to trade', action: 'Trade', kind: 'reverse', tile: 73, hp: 1, damage: 0, gold: 0, hint: 'Pass a translation challenge to buy relics with gold. Retry or leave freely.' },
   battle: { name: 'Monster lair', label: 'MELEE', mechanic: 'Vocabulary', action: 'Strike', kind: 'vocab', tile: 108, hp: 48, damage: 18, gold: 20, hint: 'Translate the word to land a hit.' },
@@ -75,7 +83,7 @@ export function createRun(seed, hero = 'wizard', enemyRoster = latestEnemyRoster
       } : {}),
     }));
   });
-  return { version: 2, ...(chestMimics ? { chestMimics: 1 } : {}), ...(shopRoutes ? { shopRoutes: 1 } : {}), enemyRoster, ...(dungeon ? { dungeon, runeCharge: false, echoQuestionId: null } : {}), seed, hero, levels, depth: 0, lane: 1, hp: heroes[hero].maxHp, gold: 0, potions: 2, streak: 0, bestStreak: 0, correct: 0, attempts: 0, phase: 'select', enemyHp: 48, enemyMax: 48, turn: 0, questionId: null, journal: [], path: [], used: [], inventory: [], equipment: { weapon: null, armor: null, charm: null }, loot: null, feedback: null, log: ['A new adventurer arrives at camp.'] };
+  return { version: 2, ...(chestMimics ? { chestMimics: 1 } : {}), ...(shopRoutes ? { shopRoutes: 1 } : {}), enemyRoster, ...(dungeon ? { dungeon, runeCharge: false, echoQuestionId: null } : {}), seed, hero, levels, depth: 0, lane: 1, hp: heroes[hero].maxHp, gold: 0, potions: 2, streak: 0, bestStreak: 0, correct: 0, attempts: 0, phase: 'select', enemyHp: 48, enemyMax: 48, turn: 0, questionId: null, journal: [], path: [], used: [], inventory: [], equipment: { weapon: null, armor: null, charm: null, charm2: null, charm3: null }, loot: null, feedback: null, log: ['A new adventurer arrives at camp.'] };
 }
 export function selectDungeon(s, dungeon) {
   if (s.phase !== 'select' || !Object.hasOwn(dungeons, dungeon)) return false;
@@ -130,8 +138,13 @@ function addLog(s, text) { s.log = [...s.log, text].slice(-5); }
 function dropLoot(s) {
   const available = Object.keys(items).filter(id => !s.inventory.includes(id));
   if (!available.length) return;
-  const pool = s.depth === 0 ? available.filter(id => items[id].slot === 'weapon') : available;
-  const id = shuffle(pool, rng(`${s.seed}:loot:${s.depth}:${s.lane}`))[0];
+  const random = rng(s.seed + ':loot:' + s.depth + ':' + s.lane);
+  const weights = { charm: .7, weapon: .18, armor: .12 };
+  const slots = Object.keys(weights).filter(slot => available.some(id => items[id].slot === slot));
+  let roll = random() * slots.reduce((sum, slot) => sum + weights[slot], 0);
+  const slot = slots.find(slot => (roll -= weights[slot]) < 0) || slots.at(-1);
+  const pool = available.filter(id => items[id].slot === slot);
+  const id = pool[Math.floor(random() * pool.length)];
   s.inventory.push(id); s.loot = id; addLog(s, `Found ${items[id].name}.`);
 }
 export function answer(s, value) {
@@ -188,10 +201,17 @@ export function choose(s, lane) {
   if (s.phase !== 'doors' || !Number.isInteger(lane) || lane < 0 || lane > 2) return false;
   s.path.push(s.lane); s.depth++; s.lane = lane; enter(s); addLog(s, `Entered ${types[room(s).type].name.toLowerCase()}.`); return true;
 }
-export function equip(s, id) {
+export function equip(s, id, targetSlot = null) {
   if (!s.inventory.includes(id) || !items[id] || ['select', 'won', 'lost'].includes(s.phase)) return false;
-  const item = items[id]; s.equipment[item.slot] = s.equipment[item.slot] === id ? null : id;
-  addLog(s, `${s.equipment[item.slot] ? 'Equipped' : 'Unequipped'} ${item.name}.`); return true;
+  const item = items[id];
+  const activeSlot = Object.keys(s.equipment).find(slot => s.equipment[slot] === id);
+  if (activeSlot) s.equipment[activeSlot] = null;
+  else {
+    const slot = item.slot === 'charm' ? (targetSlot || charmSlots.find(slot => !s.equipment[slot])) : item.slot;
+    if (!slot || (item.slot === 'charm' && !charmSlots.includes(slot))) return false;
+    s.equipment[slot] = id;
+  }
+  addLog(s, (activeSlot ? 'Unequipped ' : 'Equipped ') + item.name + '.'); return true;
 }
 export function drink(s) {
   if (!s.potions || s.hp >= maxHealth(s) || ['select', 'won', 'lost'].includes(s.phase)) return 0;
@@ -237,7 +257,10 @@ export function restore(raw) {
     if (s.depth > 8 || s.lane > 2 || s.hp > maxHealth(s) || s.enemyHp > s.enemyMax) return null;
     for (const key of ['inventory', 'journal', 'path', 'used', 'log']) if (!Array.isArray(s[key])) return null;
     if (s.inventory.some(id => !items[id]) || !s.equipment) return null;
-    for (const slot of ['weapon', 'armor', 'charm']) { const id = s.equipment[slot]; if (id !== null && (!s.inventory.includes(id) || items[id].slot !== slot)) return null; }
+    if (Object.keys(s.equipment).some(slot => !['weapon', 'armor', ...charmSlots].includes(slot))) return null;
+    for (const slot of ['weapon', 'armor', ...charmSlots]) { const id = s.equipment[slot]; if (id === undefined && ['charm2', 'charm3'].includes(slot)) continue; if (id !== null && (!s.inventory.includes(id) || items[id].slot !== (charmSlots.includes(slot) ? 'charm' : slot))) return null; }
+    const equipped = Object.values(s.equipment).filter(Boolean);
+    if (new Set(equipped).size !== equipped.length) return null;
     if (s.phase !== 'select' && !challengeBank.some(q => q.id === s.questionId)) return null;
     if (['feedback', 'lost'].includes(s.phase) && (!s.feedback || typeof s.feedback.correct !== 'boolean')) return null;
     if (s.loot !== null && !s.inventory.includes(s.loot)) return null;

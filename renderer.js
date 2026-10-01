@@ -11,7 +11,7 @@ import { wizardPose, drawWizard } from './wizard-art.js';
 import { enemyForRoom, cyclopsSheet } from './enemies.js';
 import { cyclopsPose, cyclopsMotion, cyclopsProjectile, drawCyclops, drawCyclopsStone } from './cyclops-art.js';
 import { slimeSheet, slimePose, slimeMotion, drawSlime } from './slime-art.js';
-import { goblinSheet, goblinMotion, drawGoblin, goblinProjectile } from './goblin-art.js';
+import { goblinSheet, goblinPose, goblinMotion, drawGoblin, goblinProjectile } from './goblin-art.js';
 import { skeletonSheet, skeletonPose, skeletonMotion, skeletonProjectile, drawSkeleton } from './skeleton-art.js';
 import { koboldSheet, koboldPose, koboldMotion, koboldProjectile, drawKobold } from './kobold-art.js';
 
@@ -63,12 +63,14 @@ export function createRenderer(canvas, getState) {
     return skeletonImages.get(model);
   }
   const goblinImages = new Map();
-  function goblinImage(model) {
+  function goblinImage(model, pose = 0) {
     if (!goblinImages.has(model)) {
-      const image = new Image();
-      image.src = goblinSheet(model); goblinImages.set(model, image);
+      const images = Array.from({length:6}, (_, index) => {
+        const image = new Image(); image.src = goblinSheet(model, index); return image;
+      });
+      goblinImages.set(model, images);
     }
-    return goblinImages.get(model);
+    return goblinImages.get(model)[pose];
   }
   const slimeImages = new Map();
   function slimeImage(model) {
@@ -146,7 +148,7 @@ export function createRenderer(canvas, getState) {
       : enemy?.model ? cyclopsMotion(enemy.model, e, p, time, reduced)
       : enemy?.kobold ? koboldMotion(enemy.kobold, e, p, time, reduced)
       : enemy?.skeleton ? skeletonMotion(enemy.skeleton, e, p, reduced)
-      : enemy?.goblin ? goblinMotion(enemy.goblin, e, p, reduced)
+      : enemy?.goblin ? goblinMotion(enemy.goblin, e, p, reduced, time)
       : enemy?.slimeModel ? slimeMotion(e, p, time, reduced) : null;
     const biome = dungeonBiome(s), random = rng(`${s.seed}:room:${s.depth}:${s.lane}`);
     const combat = ['battle', 'spell', 'boss'].includes(rm.type);
@@ -238,9 +240,12 @@ export function createRenderer(canvas, getState) {
             pose: skeletonPose(e, p), alpha, tilt: enemyMotion.tilt, collapse });
         } else text(skeleton.complete ? 'Skeleton artwork unavailable' : 'A fallen hero approaches…', ex, ey + 30, '#7851b0', 13);
       } else if (enemy?.goblin) {
-        if (goblin.complete && goblin.naturalWidth) {
-          drawGoblin(ctx, goblin, { model: enemy.goblin, x: ex, feet: ey + 62,
-            alpha, tilt: enemyMotion.tilt, collapse });
+        let pose = goblinPose(e, p, reduced, impact);
+        let image = goblinImage(enemy.goblin, pose);
+        if (!image.complete || !image.naturalWidth) { image = goblin; pose = 0; }
+        if (image.complete && image.naturalWidth) {
+          drawGoblin(ctx, image, { model: enemy.goblin, x: ex, feet: ey + 62, pose,
+            bob: enemyMotion.bob, alpha: dying ? 1 - clamp((p - .76) / .14) : 1 });
         } else text(goblin.complete ? 'Goblin artwork unavailable' : 'A goblin approaches…', ex, ey + 30, '#7851b0', 13);
       } else if (enemy?.slimeModel) {
         if (slime.complete && slime.naturalWidth) {
@@ -280,7 +285,7 @@ export function createRenderer(canvas, getState) {
     }
     if (combat && s.enemyHp === 0 && (!e || p > .85)) tile(24, 690, 337, 48, .7);
 
-    if (s.loot && s.phase === 'feedback' && s.equipment[items[s.loot].slot] !== s.loot && (!e || p > .78)) {
+    if (s.loot && s.phase === 'feedback' && !Object.values(s.equipment).includes(s.loot) && (!e || p > .78)) {
       glow(716, 352, 78, '#edd26a39');
       ctx.fillStyle = '#e0c26b20'; ctx.fillRect(709, 247, 14, 110);
       tile(items[s.loot].tile, 696, 313 + bob, 40);
@@ -336,7 +341,7 @@ export function createRenderer(canvas, getState) {
           }
         }
         const spell = koboldProjectile(enemy?.kobold, e, p, reduced, ex, ey + 62)
-          || goblinProjectile(enemy?.goblin, e, p, reduced);
+          || goblinProjectile(enemy?.goblin, e, p, reduced, ex, ey + 62);
         if (spell) {
           glow(spell.x, spell.y, 22, '#44d8db88');
           ctx.fillStyle = '#82f2ea'; ctx.beginPath(); ctx.arc(spell.x, spell.y, 6, 0, Math.PI * 2); ctx.fill();
@@ -374,7 +379,7 @@ export function createRenderer(canvas, getState) {
       if(audio.settings.effects || audio.settings.music) {
         await Promise.race([audio.unlock().catch(() => false), new Promise(resolve => setTimeout(resolve, 200))]);
       }
-      audio.effect({ ...event, enemyMonster: enemyForRoom(room(getState()))?.monster, enemyKobold: enemyForRoom(room(getState()))?.kobold, dragonBreath: enemyForRoom(room(getState()))?.breath, reducedMotion: reduced });
+      audio.effect({ ...event, enemyGoblin: enemyForRoom(room(getState()))?.goblin, enemyMonster: enemyForRoom(room(getState()))?.monster, enemyKobold: enemyForRoom(room(getState()))?.kobold, dragonBreath: enemyForRoom(room(getState()))?.breath, reducedMotion: reduced });
       if (effect) { effect.resolve(); effect = null; }
       return new Promise(resolve => {
         effect = { ...event, start: performance.now(), duration: reduced ? 100 : event.type === 'walk' ? 650 : event.type === 'enter' ? 550 : 1050, resolve };

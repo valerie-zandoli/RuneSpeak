@@ -84,3 +84,7 @@ This is a compact demo, not a complete Spanish curriculum. Rooms share a tile-ba
 **Tiny Dungeon (1.0) by [Kenney](https://kenney.nl/assets/tiny-dungeon)** — [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). Includes tiles, hero, monsters, doors, chests, and items. Downloaded from [the author's OpenGameArt listing](https://opengameart.org/content/tiny-dungeon). Original license: [`assets/Kenney-LICENSE.txt`](assets/Kenney-LICENSE.txt).
 
 DM Sans and Fraunces fonts are served optionally by Google Fonts under the SIL Open Font License. RuneSpeak code and original challenge content are MIT licensed; see [LICENSE](LICENSE).
+
+## Character Atlas
+
+Open [the interactive Character Atlas](character-atlas/index.html) through the local server to browse every current model and color variant, loop attack animations, and inspect individual poses. It uses the live game registries and is included in the static build. See [atlas controls and implementation notes](character-atlas/README.md).

@@ -11,7 +11,7 @@
   "format": "RGBA PNG",
   "rosterVersion": 2,
   "gameplay": "Ordinary battle pool, existing vocabulary challenges, room-scaled HP, damage and rewards. No special stat bonuses.",
-  "states": "One approved full-body pose per enemy. Melee translation, hit recoil, defeat rotation/fade; Shaman remains at range and casts a renderer-drawn projectile. Not a multi-pose animation sheet.",
+  "states": "Six simplified poses per goblin; see animation-manifest.json and frames.js. Original single-pose references below are retained for provenance.",
   "reducedMotion": "No translations, tilts, collapse or projectiles; static damage UI and defeat fade remain.",
   "assets": [
     {
@@ -66,5 +66,6 @@
   "draw": "Full 1254-square source rect; feet anchored at canvas y=347; visible height 116px (26% smaller). Shaman mirrored at draw time to face hero; source PNG unchanged.",
   "saves": "Roster 1 regenerates with original six IDs in frozen order. Pre-roster saves retain original variant-only encounters. New runs use roster 2.",
   "audio": "Existing correct-answer and retaliation cues, mute and volume preferences retained.",
-  "revision": "Simplified approved artwork: removed rust, scratches, skin spots and excess rivets; broader color regions. Reduced dungeon height from 156 to 116px. Spell origin uses the same scale."
+  "revision": "Simplified approved artwork: removed rust, scratches, skin spots and excess rivets; broader color regions. Reduced dungeon height from 156 to 116px. Spell origin uses the same scale.",
+  "activeAnimation": "animation-manifest.json"
 }

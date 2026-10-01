@@ -1,0 +1,24 @@
+{
+  "tool": "built-in image_gen",
+  "styleReference": "https://blog.duolingo.com/shape-language-duolingos-art-style/",
+  "request": "Simplify all three existing goblins and give them complete animation rigs matching other monsters.",
+  "pipeline": "Six sprite poses per model, generated from existing references. Connected-component extraction preserves original RGBA and avoids neighboring pose fragments. Fixed per-model scale, measured foot anchors. No skeletal mesh rig.",
+  "poseOrder": [
+    "idle",
+    "anticipation",
+    "attack",
+    "recovery",
+    "hurt",
+    "defeat"
+  ],
+  "sourceSheets": [
+    "skirmisher-poses.png",
+    "shaman-poses.png",
+    "fighter-poses.png"
+  ],
+  "prompts": "animation-prompts.json",
+  "frames": "frames.js",
+  "legacy": "Original single-pose references retained. Enemy IDs, stats, loot and save behavior unchanged.",
+  "reducedMotion": "Static action/hurt/defeat without lunge, bob or projectile.",
+  "audio": "Existing shared audio engine with impact at .42 seconds and Shaman cast at .231 seconds."
+}

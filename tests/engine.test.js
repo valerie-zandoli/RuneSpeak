@@ -60,7 +60,7 @@ test('combat requires enough successful attacks and wrong answers do not damage 
   proceed(s); assert.notEqual(question(s).id, first);
   answer(s, question(s).answer); assert.equal(s.enemyHp, 22); assert.equal(s.gold, 0);
   proceed(s); answer(s, question(s).answer); assert.equal(s.enemyHp, 0); assert.equal(s.gold, 30);
-  assert.equal(s.inventory.length, 1); assert.equal(items[s.loot].slot, 'weapon');
+  assert.equal(s.inventory.length, 1); assert(items[s.loot]);
 });
 test('Knight blocks 6 damage and Wizard adds 12 only to grammar damage', () => {
   const knight = start(createRun('CLASS', 'knight'));
@@ -81,7 +81,7 @@ test('equipment slots replace instead of stacking, preserve inventory, and rejec
 test('staff, tablet, and gold charm provide their stated effects', () => {
   const s = enterType('spell'); s.inventory = ['runestaff', 'sagecharm', 'goldcharm'];
   equip(s, 'runestaff'); equip(s, 'sagecharm'); assert.equal(stats(s).spell, 38);
-  equip(s, 'goldcharm'); assert.equal(stats(s).spell, 28); assert.equal(stats(s).gold, .25);
+  equip(s, 'goldcharm'); assert.equal(stats(s).spell, 38); assert.equal(stats(s).gold, .25);
   answer(s, question(s).answer); assert.equal(s.feedback.gain, 39); // (26 + streak bonus 5) * 1.25
 });
 test('treasure drops equipment and potion only for a correct sentence; shrine heals', () => {

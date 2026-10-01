@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRun, start, room, answer, question, proceed, restore } from '../engine.js';
 import { battleEnemies, enemyForRoom, enemyLabel } from '../enemies.js';
-import { goblinFrames, goblinSheet, goblinMotion, goblinProjectile, drawGoblin } from '../goblin-art.js';
+import { goblinFrames, goblinSheet, goblinPose, goblinMotion, goblinProjectile, drawGoblin } from '../goblin-art.js';
 
 test('all goblins are reachable in deterministic new runs and survive reload', () => {
   const seen = new Set();
@@ -41,16 +41,22 @@ test('all three goblins preserve existing vocabulary damage, loot and rewards', 
   }
 });
 
-test('approved goblin PNGs draw as one grounded pose with their full source bounds', () => {
+test('all 18 goblin poses draw complete, bounded artwork with one scale per model', () => {
   for (const model of Object.keys(goblinFrames)) {
-    const png = readFileSync(new URL('../' + goblinSheet(model), import.meta.url));
-    assert.equal(png.readUInt32BE(16), 1254); assert.equal(png.readUInt32BE(20), 1254);
+   const sheet=goblinFrames[model];
+   assert.deepEqual(sheet.frames.map(f=>f.state),['idle','anticipation','attack','recovery','hurt','defeat']);
+   for(let pose=0;pose<6;pose++) {
+    const frame=sheet.frames[pose];
+    const png = readFileSync(new URL('../' + goblinSheet(model,pose), import.meta.url));
+    assert.equal(png.readUInt32BE(16), frame.rect[2]); assert.equal(png.readUInt32BE(20), frame.rect[3]);
     assert.equal(png[25], 6);
     let drawn;
     const ctx = { save() {}, restore() {}, translate() {}, rotate() {}, scale() {}, drawImage(...args) { drawn = args; } };
-    drawGoblin(ctx, {}, { model, x: 716, feet: 347 });
-    assert.deepEqual(drawn.slice(1, 5), [0, 0, 1254, 1254]);
+    drawGoblin(ctx, {}, { model, pose, x: 716, feet: 347 });
+    assert.deepEqual(drawn.slice(1, 5), frame.rect);
     assert(drawn.slice(5).every(Number.isFinite));
+    assert(Math.abs(drawn[7]/frame.rect[2]-116/sheet.idleHeight)<1e-10);
+   }
   }
   assert.equal(goblinSheet('unknown'), null);
 });
@@ -63,8 +69,29 @@ test('Shaman stays at range and all feedback respects reduced motion and recover
   assert.equal(goblinProjectile('fighter', event, .25), null);
   assert.equal(goblinProjectile('shaman', event, .41), null);
   for (const model of Object.keys(goblinFrames)) {
-    assert.deepEqual(goblinMotion(model, event, .4, true), { dx: 0, tilt: 0 });
+    assert.deepEqual(goblinMotion(model, event, .4, true), { dx: 0, bob: 0 });
     assert.equal(goblinProjectile(model, event, .25, true), null);
-    assert.deepEqual(goblinMotion(model, null, 1), { dx: 0, tilt: 0 });
+    assert.deepEqual(goblinMotion(model, null, 1), { dx: 0, bob: 0 });
   }
+});
+
+test('goblin pose rigs anticipate, strike, recover, react at impact and defeat',()=>{
+ assert.deepEqual([.05,.15,.3,.65,.95].map(p=>goblinPose({type:'hurt'},p)),[0,1,2,3,0]);
+ assert.equal(goblinPose({type:'attack'},.5),4);
+ assert.equal(goblinPose({type:'attack'},.5,false,.57),0);
+ assert.equal(goblinPose({type:'attack'},.6,false,.57),4);
+ assert.equal(goblinPose({type:'attack',cleared:true},.7),5);
+ assert.equal(goblinPose(null,1),0);
+ assert.equal(goblinPose({type:'hurt'},.1,true),2);
+ assert.equal(goblinPose({type:'attack',cleared:true},.1,true),5);
+});
+
+test('Shaman projectile starts at its measured action crystal and ends at impact',()=>{
+ const sheet=goblinFrames.shaman,frame=sheet.frames[2],scale=116/sheet.idleHeight;
+ const shot=goblinProjectile('shaman',{type:'hurt'},.22,false,700,350);
+ assert.equal(shot.x,700+(sheet.emission[0]-frame.anchor[0])*scale);
+ assert.equal(shot.y,350+(sheet.emission[1]-frame.anchor[1])*scale);
+ assert(goblinProjectile('shaman',{type:'hurt'},.39).x<shot.x);
+ assert.equal(goblinProjectile('shaman',{type:'hurt'},.4),null);
+ assert.equal(goblinProjectile('shaman',null,.3),null);
 });
