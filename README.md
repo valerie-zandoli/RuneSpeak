@@ -6,7 +6,7 @@
 
 RuneSpeak is Wil Sheppard's Spanish-learning dungeon crawler.  This is my fork, and the original is at [wiltobuild/RuneSpeak](https://github.com/wiltobuild/RuneSpeak).  I use it with Wil's permission under its MIT license.  The dungeon artwork is separately licensed CC0.
 
-**My part.**  I contributed four merged pull requests:
+**My part.**  I built my contributions with an AI coding assistant.  I contributed four merged pull requests:
 
 - **[#1](https://github.com/wiltobuild/RuneSpeak/pull/1):**  A link back to the five-question demo.
 - **[#2](https://github.com/wiltobuild/RuneSpeak/pull/2):**  A browser test suite, plus share-link and font metadata.
